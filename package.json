@@ -1,0 +1,16 @@
+{
+  "name": "root",
+  "workspaces": [
+    "preact-source",
+    "preact-virtual-dom"
+  ],
+  "scripts": {
+    "start": "lerna exec -- yarn start",
+    "source": "lerna exec --scope preact-source -- yarn start",
+    "virtual": "lerna exec --scope preact-virtual-dom -- yarn start"
+  },
+  "private": true,
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}
