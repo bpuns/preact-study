@@ -33,6 +33,9 @@ export function diff(
 	oldDom,
 	isHydrating
 ) {
+
+	debugger
+
 	let tmp,
 		newType = newVNode.type;
 
@@ -194,6 +197,8 @@ export function diff(
 			let isTopLevelFragment =
 				tmp != null && tmp.type === Fragment && tmp.key == null;
 			let renderResult = isTopLevelFragment ? tmp.props.children : tmp;
+
+			debugger
 
 			diffChildren(
 				parentDom,
@@ -418,7 +423,7 @@ function diffElementNodes(
 
 			// Remove children that are not part of any vnode.
 			if (excessDomChildren != null) {
-				for (i = excessDomChildren.length; i--; ) {
+				for (i = excessDomChildren.length; i--;) {
 					if (excessDomChildren[i] != null) removeNode(excessDomChildren[i]);
 				}
 			}

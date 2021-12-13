@@ -35,6 +35,7 @@ export function diffChildren(
 	oldDom,
 	isHydrating
 ) {
+
 	let i, j, oldVNode, childVNode, newDom, firstChildDom, refs;
 
 	// This is a compression of oldParentVNode!=null && oldParentVNode != EMPTY_OBJ && oldParentVNode._children || EMPTY_ARR
@@ -145,6 +146,8 @@ export function diffChildren(
 			oldDom,
 			isHydrating
 		);
+
+		debugger
 
 		newDom = childVNode._dom;
 

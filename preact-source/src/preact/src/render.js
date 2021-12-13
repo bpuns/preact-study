@@ -13,6 +13,7 @@ import { slice } from './util';
  * existing DOM tree rooted at `replaceNode`
  */
 export function render(vnode, parentDom, replaceNode) {
+
 	if (options._root) options._root(vnode, parentDom);
 
 	// We abuse the `replaceNode` parameter in `hydrate()` to signal if we are in
@@ -36,6 +37,7 @@ export function render(vnode, parentDom, replaceNode) {
 
 	// List of effects that need to be called after diffing.
 	let commitQueue = [];
+
 	diff(
 		parentDom,
 		// Determine the new vnode tree and store it on the DOM element on
@@ -47,16 +49,16 @@ export function render(vnode, parentDom, replaceNode) {
 		!isHydrating && replaceNode
 			? [replaceNode]
 			: oldVNode
-			? null
-			: parentDom.firstChild
-			? slice.call(parentDom.childNodes)
-			: null,
+				? null
+				: parentDom.firstChild
+					? slice.call(parentDom.childNodes)
+					: null,
 		commitQueue,
 		!isHydrating && replaceNode
 			? replaceNode
 			: oldVNode
-			? oldVNode._dom
-			: parentDom.firstChild,
+				? oldVNode._dom
+				: parentDom.firstChild,
 		isHydrating
 	);
 

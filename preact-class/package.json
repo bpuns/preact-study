@@ -1,5 +1,5 @@
 {
-  "name": "preact-virtual-dom",
+  "name": "preact-class",
   "version": "1.0.0",
   "scripts": {
     "start": "vite"

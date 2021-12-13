@@ -2,12 +2,14 @@
   "name": "root",
   "workspaces": [
     "preact-source",
-    "preact-virtual-dom"
+    "preact-class",
+    "preact-hooks"
   ],
   "scripts": {
     "start": "lerna exec -- yarn start",
     "source": "lerna exec --scope preact-source -- yarn start",
-    "virtual": "lerna exec --scope preact-virtual-dom -- yarn start"
+    "class": "lerna exec --scope preact-class -- yarn start",
+    "hooks": "lerna exec --scope preact-hooks -- yarn start"
   },
   "private": true,
   "devDependencies": {
