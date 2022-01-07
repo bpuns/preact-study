@@ -34,8 +34,6 @@ export function diff(
 	isHydrating
 ) {
 
-	debugger
-
 	let tmp,
 		newType = newVNode.type;
 
@@ -197,8 +195,6 @@ export function diff(
 			let isTopLevelFragment =
 				tmp != null && tmp.type === Fragment && tmp.key == null;
 			let renderResult = isTopLevelFragment ? tmp.props.children : tmp;
-
-			debugger
 
 			diffChildren(
 				parentDom,

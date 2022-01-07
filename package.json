@@ -3,13 +3,17 @@
   "workspaces": [
     "preact-source",
     "preact-class",
-    "preact-hooks"
+    "preact-hooks",
+    "preact-my",
+    "preact-simple"
   ],
   "scripts": {
     "start": "lerna exec -- yarn start",
     "source": "lerna exec --scope preact-source -- yarn start",
     "class": "lerna exec --scope preact-class -- yarn start",
-    "hooks": "lerna exec --scope preact-hooks -- yarn start"
+    "hooks": "lerna exec --scope preact-hooks -- yarn start",
+    "my": "lerna exec --scope preact-my -- yarn start",
+    "simple": "lerna exec --scope preact-simple -- yarn start"
   },
   "private": true,
   "devDependencies": {

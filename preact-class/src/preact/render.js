@@ -1,6 +1,6 @@
 import { EMPTY_OBJ } from './constants';
 import { createElement, Fragment } from './create-element';
-import { diff } from './diff'
+import { diff, commitRoot } from './diff'
 
 export function render(vnode, parentDom) {
 
@@ -38,5 +38,7 @@ export function render(vnode, parentDom) {
     // isHydrating
     false
   )
+
+  commitRoot(commitQueue, vnode)
 
 }

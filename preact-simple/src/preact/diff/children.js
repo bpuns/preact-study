@@ -3,33 +3,12 @@ import { createVNode, Fragment } from '../create-element';
 import { EMPTY_OBJ, EMPTY_ARR } from '../constants';
 import { getDomSibling } from '../component';
 
-/**
- * Diff the children of a virtual node
- * @param {import('../internal').PreactElement} parentDom The DOM element whose
- * children are being diffed
- * @param {import('../internal').ComponentChildren[]} renderResult
- * @param {import('../internal').VNode} newParentVNode The new virtual
- * node whose children should be diff'ed against oldParentVNode
- * @param {import('../internal').VNode} oldParentVNode The old virtual
- * node whose children should be diff'ed against newParentVNode
- * @param {object} globalContext The current context object - modified by getChildContext
- * @param {boolean} isSvg Whether or not this DOM node is an SVG node
- * @param {Array<import('../internal').PreactElement>} excessDomChildren
- * @param {Array<import('../internal').Component>} commitQueue List of components
- * which have callbacks to invoke in commitRoot
- * @param {import('../internal').PreactElement} oldDom The current attached DOM
- * element any new dom elements should be placed around. Likely `null` on first
- * render (except when hydrating). Can be a sibling DOM element when diffing
- * Fragments that have siblings. In most cases, it starts out as `oldChildren[0]._dom`.
- * @param {boolean} isHydrating Whether or not we are in hydration
- */
 export function diffChildren(
 	parentDom,
 	renderResult,
 	newParentVNode,
 	oldParentVNode,
 	globalContext,
-	isSvg,
 	excessDomChildren,
 	commitQueue,
 	oldDom,
@@ -38,8 +17,6 @@ export function diffChildren(
 
 	let i, j, oldVNode, childVNode, newDom, firstChildDom, refs;
 
-	// This is a compression of oldParentVNode!=null && oldParentVNode != EMPTY_OBJ && oldParentVNode._children || EMPTY_ARR
-	// as EMPTY_OBJ._children should be `undefined`.
 	let oldChildren = (oldParentVNode && oldParentVNode._children) || EMPTY_ARR;
 
 	let oldChildrenLength = oldChildren.length;
@@ -51,9 +28,6 @@ export function diffChildren(
 		if (childVNode == null || typeof childVNode == 'boolean') {
 			childVNode = newParentVNode._children[i] = null;
 		}
-		// If this newVNode is being reused (e.g. <div>{reuse}{reuse}</div>) in the same diff,
-		// or we are rendering a component (e.g. setState) copy the oldVNodes so it can have
-		// it's own DOM & etc. pointers
 		else if (
 			typeof childVNode == 'string' ||
 			typeof childVNode == 'number' ||
@@ -140,7 +114,6 @@ export function diffChildren(
 			childVNode,
 			oldVNode,
 			globalContext,
-			isSvg,
 			excessDomChildren,
 			commitQueue,
 			oldDom,

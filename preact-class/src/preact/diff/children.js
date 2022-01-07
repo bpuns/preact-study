@@ -27,7 +27,7 @@ export function diffChildren(
   // 给新虚拟 dom 节点绑定一个 _children 属性，方便后面进行存储节点
   newParentVNode._children = []
 
-  // 遍历函数组件/类组件 render 出来的子节点
+  //#region 遍历函数组件/类组件 render 出来的子节点
   for (i = 0; i < renderResult.length; i++) {
     childVNode = renderResult[i]
 
@@ -140,8 +140,122 @@ export function diffChildren(
     )
     //#endregion
 
+    debugger
 
+    // 取出来当前子节点的 _dom 
+    newDom = childVNode._dom
+
+    // 现在用不到，修改删除元素的时候用的（应该）
+    if ((j = childVNode.ref) && oldVNode.ref != j) {
+      debugger
+    }
+
+    // ------------ 收集依赖 ------------
+
+    // 如果当前节点存在
+    if (newDom != null) {
+      // 如果 firstChildDom 为空，那么把当前的 newDom 赋值到 firstChildDom 上
+      if (firstChildDom == null) {
+        firstChildDom = newDom
+      }
+
+      if (
+        typeof childVNode.type == 'function' &&
+        childVNode._children === oldVNode._children
+      ) {
+        debugger
+      } else {
+        oldDom = placeChild(
+          parentDom,
+          childVNode,
+          oldVNode,
+          oldChildren,
+          newDom,
+          oldDom
+        )
+      }
+
+      // 如果父节点是函数组件，那么把 oldDom 放到父节点的 _nextDom 上
+      if (typeof newParentVNode.type == 'function') {
+        newParentVNode._nextDom = oldDom
+      }
+
+    } else if (
+      oldDom &&
+      oldVNode._dom == oldDom &&
+      oldDom.parentNode != parentDom
+    ) {
+      debugger
+      oldDom = getDomSibling(oldVNode);
+    }
 
   }
+  //#endregion 循环完毕
+
+  // 第一个子节点的真实dom赋值到 newParentVNode._dom 上
+  newParentVNode._dom = firstChildDom
+
+  // 因为上面匹配到了，直接把旧的对应节点设置为了 undefined
+  // 把旧的虚拟dom下的子节点中，不等与 undefined 的元素删除
+  for (i = oldChildrenLength; i--;) {
+    if (oldChildren[i] != null) {
+      debugger
+      if (
+        typeof newParentVNode.type == 'function' &&
+        oldChildren[i]._dom != null &&
+        oldChildren[i]._dom == newParentVNode._nextDom
+      ) {
+        debugger
+      }
+
+      unmount(oldChildren[i], oldChildren[i]);
+    }
+  }
+
+  if (refs) {
+    debugger
+  }
+
+}
+
+function placeChild(
+  parentDom,
+  childVNode,
+  oldVNode,
+  oldChildren,
+  newDom,
+  oldDom
+) {
+  let nextDom
+
+  // 判断当前子节点 _nextDom 是否为空
+  if (childVNode._nextDom !== undefined) {
+    debugger
+  }
+  // 如果旧节点为空
+  // 新旧dom不是同一个
+  // 新dom节点的父节点不存在
+  else if (
+    oldVNode == null ||
+    newDom != oldDom ||
+    newDom.parentNode == null
+  ) {
+    // 旧节点不存在 或者 旧节点的父节点不等于现在的父节点，说明现在是新增节点
+    outer: if (oldDom == null || oldDom.parentNode !== parentDom) {
+      // 直接把当前的节点添加到 parentDom 上
+      parentDom.appendChild(newDom)
+      nextDom = null
+    } else {
+      debugger
+    }
+  }
+
+  if (nextDom !== undefined) {
+    oldDom = nextDom
+  } else {
+    oldDom = newDom.nextSibling
+  }
+
+  return oldDom
 
 }

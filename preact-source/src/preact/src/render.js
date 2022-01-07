@@ -38,6 +38,8 @@ export function render(vnode, parentDom, replaceNode) {
 	// List of effects that need to be called after diffing.
 	let commitQueue = [];
 
+	debugger
+
 	diff(
 		parentDom,
 		// Determine the new vnode tree and store it on the DOM element on

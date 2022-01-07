@@ -54,7 +54,8 @@ const style = { border: '3px solid #D6D6D6', margin: '5px' }
 const element = (
   h(
     'div', { id: 'A1', style },
-    'A1-text',
+    'A-text-1',
+    // 'A-text-2', 
     // h(
     //   'div', { id: 'B1', style },
     //   'B1-text',
@@ -65,6 +66,6 @@ const element = (
   )
 )
 
-console.log(element)
+// console.log(element)
 
 render(element, root)

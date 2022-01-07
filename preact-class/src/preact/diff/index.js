@@ -18,9 +18,16 @@ export function diff(
   isHydrating
 ) {
 
+  debugger
+
   // 判断当前diff节点的type
   let newType = newVNode.type
   let tmp
+
+  // 如果传入的节点不是 null，undefined，boolean，数字，字符串，那么就不会转为虚拟dom
+  // 每个虚拟dom中都有一个 constructor 的自定义属性，一开始为null，一般元素原型上都存在 constructor
+  // 所以在这里判断 constructor , 如果不为空，说明当前节点不是合法的虚拟 dom 节点，不处理
+  if (newVNode.constructor !== undefined) return null
 
   outer: if (typeof newType == 'function') {
 
@@ -46,7 +53,7 @@ export function diff(
     if (oldVNode._component) {
       c = newVNode._component = oldVNode._component
     }
-    // 没有实例化，或者当前这个节点根本不是类组件
+    // 没有实例化
     else {
       // 判断当前是否是类组件
       if ('prototype' in newType && newType.prototype.render) {
@@ -191,7 +198,7 @@ export function diff(
     c._parentDom = parentDom
     c._dirty = false
 
-    // 获取新的子节点虚拟dom组件
+    // 获取新的子节点虚拟dom
     tmp = c.render(c.props, c.state, c.context)
 
     // getSnapshotBeforeUpdate 必须是第二次更新+才会触发，因为这里面可能会触发dom操作
@@ -207,7 +214,7 @@ export function diff(
 
     // 当前节点基本处理完毕
     diffChildren(
-      // 当前节点真实dom元素
+      // 当前虚拟节点的父节点的真实dom元素
       parentDom,
       // 当前节点的子节点，如果不是数组，包裹成一个数组
       Array.isArray(renderResult) ? renderResult : [renderResult],
@@ -229,6 +236,17 @@ export function diff(
       isHydrating
     )
 
+    // 把虚拟dom上的dom指向放到 component 实例上
+    c.base = newVNode._dom
+
+    newVNode._hydrating = null
+
+    // 如果 _renderCallbacks 存在，放到 commitQueue 中
+    if (c._renderCallbacks.length) {
+      commitQueue.push(c)
+    }
+
+    c._force = false
 
   }
   // 应该是处理文本节点的
@@ -379,6 +397,12 @@ function diffElementNodes(
       // 取出新的虚拟dom节点的子节点
       i = newVNode.props.children
 
+      console.log(excessDomChildren
+        ? excessDomChildren[0]
+        : oldVNode._children && getDomSibling(oldVNode, 0))
+
+      debugger
+
       // 继续递归子节点
       diffChildren(
         dom,
@@ -431,6 +455,26 @@ function diffElementNodes(
 
 }
 
+export function commitRoot(commitQueue, root) {
+  console.log('清除所有副作用')
+  // if (options._commit) options._commit(root, commitQueue);
+
+  commitQueue.some(c => {
+    debugger
+    try {
+      // @ts-ignore Reuse the commitQueue variable here so the type changes
+      commitQueue = c._renderCallbacks;
+      c._renderCallbacks = [];
+      commitQueue.some(cb => {
+        // @ts-ignore See above ts-ignore on commitQueue
+        cb.call(c);
+      });
+    } catch (e) {
+      options._catchError(e, c._vnode);
+    }
+  });
+}
+
 /** 函数组件模仿类组件的 render 行为
  * @param {*} props 
  * @param {*} _ 
@@ -439,4 +483,40 @@ function diffElementNodes(
  */
 function doRender(props, _, context) {
   return this.constructor(props, context);
+}
+
+
+export function unmount(vnode, parentVNode, skipRemove) {
+  let r;
+  if (options.unmount) options.unmount(vnode);
+
+  if ((r = vnode.ref)) {
+    if (!r.current || r.current === vnode._dom) applyRef(r, null, parentVNode);
+  }
+
+  if ((r = vnode._component) != null) {
+    if (r.componentWillUnmount) {
+      try {
+        r.componentWillUnmount();
+      } catch (e) {
+        options._catchError(e, parentVNode);
+      }
+    }
+
+    r.base = r._parentDom = null;
+  }
+
+  if ((r = vnode._children)) {
+    for (let i = 0; i < r.length; i++) {
+      if (r[i]) {
+        unmount(r[i], parentVNode, typeof vnode.type != 'function');
+      }
+    }
+  }
+
+  if (!skipRemove && vnode._dom != null) removeNode(vnode._dom);
+
+  // Must be set to `undefined` to properly clean up `_nextDom`
+  // for which `null` is a valid value. See comment in `create-element.js`
+  vnode._dom = vnode._nextDom = undefined;
 }

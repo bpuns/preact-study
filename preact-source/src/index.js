@@ -1,93 +1,78 @@
 import { h, render, Component } from './preact/src/index'
 
-// class Counter extends Component {
+// class C1 extends Component {
 
-//   constructor(props) {
-//     super(props)
-//     this.state = {
-//       number: 1
-//     }
-//   }
-
-//   add = () => {
-//     this.setState({ number: this.state.number + 1 })
-//     this.setState({ number: this.state.number + 1 })
-//     this.setState({ number: this.state.number + 1 })
-//     this.setState({ number: this.state.number + 1 })
-//     setTimeout(() => {
-//       this.setState({ number: this.state.number + 1 })
-//       this.setState({ number: this.state.number + 1 })
-//       this.setState({ number: this.state.number + 1 })
-//       this.setState({ number: this.state.number + 1 })
-//     }, 1000)
-//   }
-
-//   componentDidUpdate(_1, _2, ss) {
-//     console.log('componentDidUpdate', ss)
-//   }
-
-//   getSnapshotBeforeUpdate(){
-//     return 1
+//   state = {
+//     show: true
 //   }
 
 //   render() {
-
 //     return (
-//       h(
-//         'div',
-//         {},
-//         this.state.number,
-//         h(
-//           'button',
-//           { onClick: this.add },
-//           'add'
-//         )
-//       )
+//       this.state.show ? h('div', { id: 'C1', onClick: ()=>{ this.setState({ show: false }) } }, 'C1', h(C2, {})) : null
 //     )
 //   }
 
 // }
 
-// render(h(Counter), root)
+// class C2 extends Component {
 
-const list = [{ id: 1, name: 1 }, { id: 2, name: 2 }, { id: 3, name: 3 }]
+//   render() {
+//     return h('div', { id: 'C2' }, 'C2', h(C3, {}))
+//   }
+
+//   componentWillUnmount(){
+//     console.log('C2 componentWillUnmount')
+//   }
+
+// }
+
+// class C3 extends Component {
+
+//   componentWillUnmount(){
+//     console.log('C3 componentWillUnmount')
+//   }
+
+//   render() {
+//     return h('div', { id: 'C3' }, 'C3')
+//   }
+
+// }
+
+// render(h(C1), document.querySelector('#root'))
 
 const style = { border: '3px solid #D6D6D6', margin: '5px' }
 const element = (
   h(
-    'div', { id: 'A1', style },
-    'A1-text',
-    // list.map(item => h('div', { key: item.id }, item.name))
-    // h(
-    //   'div', { id: 'B1', style },
-    //   'B1-text',
-    //   h('div', { id: 'C1', style }, 'C1-text'),
-    //   h('div', { id: 'C2', style }, 'C2-text'),
-
-    // ),
-    // h('div', { id: 'B2', style }, 'B2-text')
+    'ul',
+    { id: 'A1', style },
+    [
+      h('li', { key: '1', style }, 1),
+      h('li', { key: '2', style }, 2),
+      h('li', { key: '3', style }, 3),
+      h('li', { key: '4', style }, 4),
+      h('li', { key: '5', style }, 5)
+    ]
   )
 )
 
-console.log(element)
+render(element, document.querySelector('#root'))
 
-render(element, root)
+document.querySelector('button').onclick = () => {
 
-// render2.onclick = function () {
-//   const style = { border: '5px solid #D6D6D6', margin: '2px' }
-//   const element = (
-//     h(
-//       'div', { id: 'A1', style },
-//       'A1-edit',
-//       h(
-//         'div', { id: 'B1', style },
-//         'B1-edit',
-//         h('div', { id: 'C1', style }, 'C1-edit'),
-//         h('div', { id: 'C2', style }, 'C2-edit')
-//       ),
-//       h('div', { id: 'B2', style }, 'B2')
-//     )
-//   )
+  const style = { border: '10px solid #D6D6D6', margin: '5px' }
+  const element = (
+    h(
+      'ul',
+      { id: 'A1', style },
+      [
+        h('li', { key: '2', style }, 2),
+        h('li', { key: '1', style }, 1),
+        h('li', { key: '5', style }, 5),
+        h('li', { key: '6', style }, 6)
+      ]
+    )
+  )
 
-//   render(element, root)
-// }
+  render(element, document.querySelector('#root'))
+
+}
