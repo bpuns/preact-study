@@ -5,7 +5,8 @@
     "preact-class",
     "preact-hooks",
     "preact-my",
-    "preact-simple"
+    "preact-simple",
+    "preact-simple1"
   ],
   "scripts": {
     "start": "lerna exec -- yarn start",
@@ -13,7 +14,8 @@
     "class": "lerna exec --scope preact-class -- yarn start",
     "hooks": "lerna exec --scope preact-hooks -- yarn start",
     "my": "lerna exec --scope preact-my -- yarn start",
-    "simple": "lerna exec --scope preact-simple -- yarn start"
+    "simple": "lerna exec --scope preact-simple -- yarn start",
+    "simple1": "lerna exec --scope preact-simple1 -- yarn start"
   },
   "private": true,
   "devDependencies": {
