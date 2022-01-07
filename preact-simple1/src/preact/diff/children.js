@@ -142,6 +142,7 @@ function placeChild(
 	newDom,
 	oldDom
 ) {
+
 	let nextDom;
 	if (childVNode._nextDom !== undefined) {
 		

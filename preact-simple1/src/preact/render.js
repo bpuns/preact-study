@@ -8,7 +8,6 @@ export function render(vnode, parentDom) {
 
 	vnode = parentDom._children = createElement(Fragment, null, [vnode]);
 
-
 	diff(
 		parentDom,
 		vnode,

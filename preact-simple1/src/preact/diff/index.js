@@ -2,7 +2,7 @@ import { EMPTY_OBJ } from '../constants';
 import { Component, getDomSibling } from '../component';
 import { Fragment } from '../create-element';
 import { diffChildren } from './children';
-import { diffProps, setProperty } from './props';
+import { diffProps } from './props';
 import { removeNode } from '../util';
 
 export function diff(
@@ -19,7 +19,7 @@ export function diff(
 
 	if (typeof newType == 'function') {
 
-		let c, isNew
+		let c
 		// 取出当前新虚拟dom的props
 		let newProps = newVNode.props
 
@@ -41,30 +41,11 @@ export function diff(
 				c.render = newType
 			}
 
-			// 下面这两句话没有什么必要，因为上面实例化，已经把 props, context 保存到实例对象上去了
-			c.props = newProps
-
-			// 如果实例对象上的 state 为 null，undefined，NaN, 0, -0, false, '' , 就会重写 state 为空对象
-			if (!c.state) c.state = {}
-
-			// 记录当前节点是脏组件（需要更新）
-			isNew = c._dirty = true
-
-			// 保存更新到页面上之后需要执行的一些回调
-			c._renderCallbacks = []
-
-		}
-
-		// 下一次需要更新的state
-		if (c._nextState == null) {
-			c._nextState = c.state;
 		}
 
 		c.props = newProps
-		c.state = c._nextState
 		c._vnode = newVNode
 		c._parentDom = parentDom
-		c._dirty = false
 
 		// 获取新的子节点虚拟dom
 		tmp = c.render(c.props, c.state, c.context)
@@ -151,23 +132,6 @@ function diffElementNodes(
 }
 
 export function unmount(vnode, parentVNode, skipRemove) {
-	let r;
-
-	if ((r = vnode._component) != null) {
-		if (r.componentWillUnmount) {
-			r.componentWillUnmount();
-		}
-
-		r.base = r._parentDom = null;
-	}
-
-	if ((r = vnode._children)) {
-		for (let i = 0; i < r.length; i++) {
-			if (r[i]) {
-				unmount(r[i], parentVNode, typeof vnode.type != 'function');
-			}
-		}
-	}
 
 	if (!skipRemove && vnode._dom != null) removeNode(vnode._dom);
 

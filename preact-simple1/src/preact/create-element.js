@@ -1,5 +1,4 @@
 import { slice } from './util';
-import options from './options';
 
 let vnodeId = 0;
 
@@ -21,7 +20,6 @@ export function createElement(type, props, children) {
 
 	return createVNode(type, normalizedProps, key, ref, null);
 }
-
 
 export function createVNode(type, props, key, ref, original) {
 

@@ -4,5 +4,4 @@ export {
 	createElement as h,
 	Fragment
 } from './create-element';
-export { Component } from './component';
-export { default as options } from './options';
+export { Component } from './component'

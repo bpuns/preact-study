@@ -9,16 +9,7 @@ export function diffProps(dom, newProps, oldProps) {
 	}
 
 	for (i in newProps) {
-		if (
-			(true || typeof newProps[i] == 'function') &&
-			i !== 'children' &&
-			i !== 'key' &&
-			i !== 'value' &&
-			i !== 'checked' &&
-			oldProps[i] !== newProps[i]
-		) {
-			setProperty(dom, i, newProps[i], oldProps[i]);
-		}
+		setProperty(dom, i, newProps[i], oldProps[i]);
 	}
 }
 
@@ -66,7 +57,6 @@ export function setProperty(dom, name, value, oldValue,) {
 	else if (name[0] === 'o' && name[1] === 'n') {
 		useCapture = name !== (name = name.replace(/Capture$/, ''));
 
-		// Infer correct casing for DOM built-in events:
 		if (name.toLowerCase() in dom) name = name.toLowerCase().slice(2);
 		else name = name.slice(2);
 
@@ -83,30 +73,19 @@ export function setProperty(dom, name, value, oldValue,) {
 			dom.removeEventListener(name, handler, useCapture);
 		}
 	} else {
-		if (
-			name !== 'href' &&
-			name !== 'list' &&
-			name !== 'form' &&
-			name !== 'tabIndex' &&
-			name !== 'download' &&
-			name in dom
-		) {
-			try {
+
+		if (name !== 'children') {
+			if (
+				typeof value === 'string' ||
+				typeof value === 'number'
+			) {
 				dom[name] = value == null ? '' : value;
-				break o;
-			} catch (e) { }
+			} else {
+				dom.removeAttribute(name);
+			}
+
 		}
 
-		if (typeof value === 'function') {
-			// 永远不要将函数序列化为属性值
-		} else if (
-			value != null &&
-			(value !== false || (name[0] === 'a' && name[1] === 'r'))
-		) {
-			dom.setAttribute(name, value);
-		} else {
-			dom.removeAttribute(name);
-		}
 	}
 }
 
