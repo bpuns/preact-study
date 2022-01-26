@@ -1,21 +1,14 @@
 {
   "name": "root",
   "workspaces": [
-    "preact-source",
-    "preact-class",
-    "preact-hooks",
-    "preact-my",
-    "preact-simple",
-    "preact-simple1"
+    "packages/*"
   ],
   "scripts": {
-    "start": "lerna exec -- yarn start",
-    "source": "lerna exec --scope preact-source -- yarn start",
-    "class": "lerna exec --scope preact-class -- yarn start",
-    "hooks": "lerna exec --scope preact-hooks -- yarn start",
-    "my": "lerna exec --scope preact-my -- yarn start",
-    "simple": "lerna exec --scope preact-simple -- yarn start",
-    "simple1": "lerna exec --scope preact-simple1 -- yarn start"
+    "1": "lerna exec --scope 1 -- yarn start",
+    "2": "lerna exec --scope 2 -- yarn start",
+    "3": "lerna exec --scope 3 -- yarn start",
+    "4": "lerna exec --scope 4 -- yarn start",
+    "99": "lerna exec --scope 99 -- yarn start"
   },
   "private": true,
   "devDependencies": {

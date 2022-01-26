@@ -1,0 +1,13 @@
+{
+  "name": "99",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "vite"
+  },
+  "devDependencies": {
+    "preact": "10.6.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "vite": "2.7.1"
+  }
+}
