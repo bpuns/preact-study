@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+
+    let state = { age: 1 },
+        nextState = null,
+        isDirty = false
+
+    function render() {
+      console.log('render');
+      state = nextState
+      isDirty = false
+    }
+
+    function setState(newState) {
+
+      if (!nextState) {
+        nextState = { ...state }
+      }
+
+      nextState = { ...nextState, ...newState }
+
+      if (!isDirty) {
+        queueMicrotask(render)
+        isDirty = true
+      }
+    }
+
+    setState({ age: state.age + 1 })
+    setState({ age: state.age + 1 })
+
+    setTimeout(() => {
+      setState({ age: state.age + 1 })
+      setState({ age: state.age + 1 })
+    }, 100)
+
+
+  </script>
+</body>
+
+</html>

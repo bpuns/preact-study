@@ -1,4 +1,6 @@
+import { EMPTY_OBJ } from '../constants'
 import { diffChildren } from './children'
+import { diffProps } from './props'
 
 /**
  * 处理子节点
@@ -6,7 +8,7 @@ import { diffChildren } from './children'
  * @param {*} newParentVNode   新虚拟dom节点
  * @param {*} oldParentVNode   可复用的虚拟dom节点
  */
- export function diff(
+export function diff(
   parentDom,
   newVNode,
   oldVNode
@@ -17,8 +19,11 @@ import { diffChildren } from './children'
 
     newVNode._dom = document.createElement(newVNode.type)
 
-    // 为了方便查看，赋值className
-    newVNode._dom.className = newVNode.props.className
+    diffProps(
+      newVNode._dom,
+      newVNode.props,
+      oldVNode?.props || EMPTY_OBJ
+    )
 
     const children = newVNode?.props?.children
 

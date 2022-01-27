@@ -19,20 +19,47 @@
 // }
 // document.body.appendChild(button)
 
-// import { createElement } from 'react'
-// import ReactDom from 'react-dom'
+import { createElement, Component } from 'react'
+import ReactDom from 'react-dom'
 
-// ReactDom.render(
-//   createElement('div', null, {}),
+class Root extends Component {
+
+  state = { count: 1 }
+
+  render() {
+
+    console.log('render')
+
+    return (
+      createElement(
+        'button',
+        {
+          onClick: () => {
+            this.setState({ count: this.state.count + 1 })
+            this.setState({ count: this.state.count + 1 })
+            setTimeout(() => {
+              this.setState({ count: this.state.count + 1 })
+              this.setState({ count: this.state.count + 1 })
+            })
+          }
+        },
+        this.state.count
+      )
+    )
+  }
+
+}
+
+ReactDom
+  .createRoot(document.getElementById('root'))
+  .render(createElement(Root))
+
+
+
+
+// import { createElement, render } from 'preact'
+
+// render(
+//   createElement('div', null, Error('xx')),
 //   document.getElementById('root')
 // )
-
-
-
-
-import { createElement, render } from 'preact'
-
-render(
-  createElement('div', null, Error('xx')),
-  document.getElementById('root')
-)

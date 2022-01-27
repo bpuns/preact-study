@@ -18,6 +18,17 @@ interface VNode {
 }
 
 /**
+ * @param dom       当前虚拟dom对应的真实dom节点
+ * @param newProps  新虚拟dom节点的props
+ * @param oldProps  旧虚拟dom节点的props
+ */
+declare function diffProps(
+  dom: HTMLElement,
+  newProps: Pick<VNode, 'props'>,
+  oldProps: Pick<VNode, 'props'>
+): void;
+
+/**
  * @param vnode      需要渲染到页面上的虚拟dom
  * @param parentDom  需要渲染的容器
  */

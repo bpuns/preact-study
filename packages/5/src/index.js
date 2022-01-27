@@ -1,6 +1,6 @@
 import { createElement, render } from './react'
 
-const style = { border: '3px solid #D6D6D6', margin: '5px' }
+const style = { border: '3px solid #D6D6D6', margin: '5px', borderBottomColor: 'red' }
 
 const element = (
   createElement(

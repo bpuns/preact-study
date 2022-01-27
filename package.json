@@ -4,11 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "1": "lerna exec --scope 1 -- yarn start",
-    "2": "lerna exec --scope 2 -- yarn start",
-    "3": "lerna exec --scope 3 -- yarn start",
-    "4": "lerna exec --scope 4 -- yarn start",
-    "99": "lerna exec --scope 99 -- yarn start"
+    "start": "node run"
   },
   "private": true,
   "devDependencies": {
