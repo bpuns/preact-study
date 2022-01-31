@@ -15,8 +15,7 @@ export function render(newVnode, parentDom) {
   newVnode = parentDom._children = {
     props: {
       children: Array.isArray(newVnode) ? newVnode : [newVnode]
-    },
-    _dom: parentDom
+    }
   }
 
   // 3  开始处理子节点

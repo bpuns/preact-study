@@ -1,19 +1,39 @@
 import { createElement, render } from './react'
 
-const style = { border: '3px solid #D6D6D6', margin: '5px', borderBottomColor: 'red' }
+// const style = { border: '5px solid #D6D6D6', margin: '5px' }
 
-const element = (
-  createElement(
-    'div', { className: 'A1', style },
-    'A-text',
-    createElement(
-      'div', { className: 'B1', style },
-      'B1-text',
-      createElement('div', { className: 'C1', style, onClick: () => alert(1) }, 'C1-text'),
-      createElement('div', { className: 'C2', style }, 'C2-text')
-    ),
-    createElement('div', { className: 'B2', style }, 'B2-text')
-  )
-)
+// const element = createElement('div', { style },
+//   createElement('div', { style, key: 1 }, '1'),
+//   createElement('div', { style, key: 2 }, '2'),
+//   createElement('div', { style, key: 3 }, '3'),
+//   createElement('div', { style, key: 4 }, '4')
+// )
+
+// render(element, document.getElementById('root'))
+
+// document.querySelector('button').onclick = () => {
+
+//   const element = createElement('div', { style },
+//     createElement('div', { style, key: 4 }, '4-1'),
+//     createElement('div', { style, key: 1 }, '1'),
+//     createElement('div', { style, key: 3 }, '3'),
+//     createElement('div', { style, key: 5 }, '5'),
+//   )
+
+//   render(element, document.getElementById('root'))
+// }
+
+
+
+const style = { border: '5px solid #D6D6D6', margin: '5px' }
+
+const element = createElement('div', { id: 'a', style }, 1)
 
 render(element, document.getElementById('root'))
+
+document.querySelector('button').onclick = () => {
+
+  const element = createElement('div', { id: 'a', style }, 2)
+
+  render(element, document.getElementById('root'))
+}

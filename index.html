@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <ul><li id="a" style="transform: translateX(0px);">a</li><li id="b">b</li><li id="c">c</li></ul>
+
+  <button onclick="xx()">update</button>
+
+  <script>
+    const ul = document.querySelector('ul')
+    
+    const first = ul.firstChild
+
+    // console.log(first.style);
+
+    function xx(){
+      first.style.transform = 'translateX(100px)'
+      console.log(first.firstChild);
+      console.log(first.parentDom);
+      first.style.transform = 'translateX(-50px)'
+    }
+    
+  </script>
+</body>
+</html>

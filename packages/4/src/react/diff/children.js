@@ -29,7 +29,7 @@ export function diffChildren(
     if (childVNode == null || typeof childVNode == 'boolean') {
       childVNode = newParentVNode._children[i] = null
     }
-    // 如果是数字，字符串，大整型的话，重新组合从一个新的虚拟dom节点
+    // 如果是数字，字符串，大整型的话，重新组合成一个新的虚拟dom节点
     else if (
       typeof childVNode == 'string' ||
       typeof childVNode == 'number' ||
