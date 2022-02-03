@@ -24,7 +24,10 @@ export function render(newVnode, parentDom) {
     newVnode.props.children,
     newVnode,
     oldVnode,
-    parentDom.firstChild
+    // 因为子节点的_dom会放到父节点上，所以直接取 oldVnode._dom 就行
+    oldVnode
+			? oldVnode._dom
+			: parentDom.firstChild
   )
 
 }

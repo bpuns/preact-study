@@ -8,6 +8,7 @@ import { createVNode } from '../createElement'
  * @param {*} newChildren      要处理的子节点
  * @param {*} newParentVNode   父虚拟dom节点
  * @param {*} oldParentVNode   旧的虚拟dom节点
+ * @param {*} oldDom           oldDom
  */
 export function diffChildren(
   parentDom,
@@ -19,6 +20,8 @@ export function diffChildren(
 
   // 取到旧的虚拟dom的子节点
   let oldChildren = (oldParentVNode && oldParentVNode._children) || EMPTY_ARR
+
+  let firstChildDom
 
   let oldChildrenLength = oldChildren.length
 
@@ -101,6 +104,10 @@ export function diffChildren(
     // 如果 newDom 存在
     if (newDom != null) {
 
+      if (firstChildDom == null) {
+        firstChildDom = newDom;
+      }
+
       oldDom = placeChild(
         parentDom,
         oldVNode,
@@ -112,13 +119,17 @@ export function diffChildren(
 
   }
 
+  // 把当前第一个子节点的真实dom指向父节点的 _dom
+  // 如果当前父节点是真实dom的话，在 diff 中，会重新绑定 _dom
+  // 如果不是真实dom的话，比如函数组件，那么函数组件的 _dom 就是自己的第一个子节点
+  newParentVNode._dom = firstChildDom
+
   // 把没用过的子节点全部删除
   for (let i = oldChildrenLength; i--;) {
     oldChildren[i] && unmount(oldChildren[i], oldChildren[i])
   }
 
 }
-
 
 /**	
  * @param {*} parentDom    当前虚拟dom节点的《父节点》的真实dom
