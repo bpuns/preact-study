@@ -34,8 +34,14 @@ function setProperty(dom, name, newValue, oldValue) {
   // 如果新值旧值一致，不处理
   if (newValue === oldValue) return
 
+  // 处理 className
+  if(name === 'className'){
+    if(newValue != oldValue){
+      dom.className = newValue
+    }
+  }
   // 处理style
-  if (name === 'style') {
+  else if (name === 'style') {
     setStyle(...arguments)
   }
   // 处理事件
@@ -112,7 +118,7 @@ function setEventListener(dom, name, newValue, oldValue) {
 
   if (newValue && !oldValue) {
     dom.addEventListener(name, handler, useCapture)
-  } else {
+  } else if (!newValue && oldValue) {
     dom.removeEventListener(name, handler, useCapture)
   }
 

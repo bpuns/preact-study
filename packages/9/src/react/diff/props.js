@@ -35,8 +35,8 @@ function setProperty(dom, name, newValue, oldValue) {
   if (newValue === oldValue) return
 
   // 处理 className
-  if(name === 'className'){
-    if(newValue != oldValue){
+  if (name === 'className') {
+    if (newValue != oldValue) {
       dom.className = newValue
     }
   }

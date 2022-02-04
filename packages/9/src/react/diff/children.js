@@ -9,13 +9,15 @@ import { createVNode } from '../createElement'
  * @param {*} newParentVNode   父虚拟dom节点
  * @param {*} oldParentVNode   旧的虚拟dom节点
  * @param {*} oldDom           oldDom
+ * @param {*} commitQueue      存放diff完成之后需要执行的任务对象
  */
 export function diffChildren(
   parentDom,
   newChildren,
   newParentVNode,
   oldParentVNode,
-  oldDom
+  oldDom,
+  commitQueue
 ) {
 
   // 取到旧的虚拟dom的子节点
@@ -95,7 +97,9 @@ export function diffChildren(
     diff(
       parentDom,
       childVNode,
-      oldVNode || EMPTY_OBJ
+      oldVNode || EMPTY_OBJ,
+      oldDom,
+      commitQueue
     )
 
     // diff后会在 虚拟dom 上挂载上一个 _dom 保存真实的dom元素，取出来，后面要用

@@ -60,36 +60,51 @@ import { render } from 'react-dom'
 //   createElement
 // }
 
+// import { Component, Fragment, createElement, render } from './react'
+
+// const React = { createElement }
+
 class Root extends Component {
 
-  state = { show: false }
+  state = {
+    a: 1
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState){
+    console.log(nextProps, prevState)
+    return {
+      ...nextProps,
+      ...prevState
+    }
+  }
 
   render() {
 
-    const { show } = this.state
+    console.log(this.state);
 
-    // if (show) {
-    //   return (
-    //     <div>
-    //       <div>1</div>
-    //       <div>2</div>
-    //       <button onClick={() => this.setState({ show: !show })}> update</button>
-    //     </div>
-    //   )
-    // } else {
-    //   return (
-    //     <div>
-    //       <div>2</div>
-    //       <button onClick={() => this.setState({ show: !show })}> update</button>
-    //     </div>
-    //   )
-    // }
-
+    return (
+      <div>test</div>
+    )
   }
-
 }
 
-render(<Root />, document.getElementById('root'))
+render(
+  <Root b={2} />,
+  root
+)
+
+// document.querySelector('button').onclick = function () {
+//   render(
+//     <div>
+//       <FragmentTest a={true} />
+//       <div key={0} id='0'>0</div>
+//       <div key={4} id='4'>4</div>
+//     </div>,
+//     root
+//   )
+// }
+
+// render(<Root />, document.getElementById('root'))
 
 // import { createElement, render } from 'preact'
 

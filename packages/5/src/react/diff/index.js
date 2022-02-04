@@ -14,8 +14,6 @@ export function diff(
   oldVNode
 ) {
 
-  debugger
-
   if (
     newVNode.props === oldVNode.props
   ) {
