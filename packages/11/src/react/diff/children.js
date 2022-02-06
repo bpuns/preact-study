@@ -10,13 +10,15 @@ import { createVNode } from '../createElement'
  * @param {*} newParentVNode   父虚拟dom节点
  * @param {*} oldParentVNode   旧的虚拟dom节点
  * @param {*} oldDom           oldDom
+ * @param {*} commitQueue      存放diff完成之后需要执行的任务对象
  */
 export function diffChildren(
   parentDom,
   newChildren,
   newParentVNode,
   oldParentVNode,
-  oldDom
+  oldDom,
+  commitQueue
 ) {
 
   // 取到旧的虚拟dom的子节点
@@ -51,7 +53,7 @@ export function diffChildren(
         null,
         null
       )
-    } 
+    }
     // 列表
     else if (Array.isArray(childVNode)) {
       childVNode = newParentVNode._children[i] = createVNode(
@@ -105,7 +107,9 @@ export function diffChildren(
     diff(
       parentDom,
       childVNode,
-      oldVNode || EMPTY_OBJ
+      oldVNode || EMPTY_OBJ,
+      oldDom,
+      commitQueue
     )
 
     // diff后会在 虚拟dom 上挂载上一个 _dom 保存真实的dom元素，取出来，后面要用
@@ -195,8 +199,22 @@ function placeChild(
 
 export function unmount(vnode) {
 
-  if (vnode._dom != null) {
-    vnode._dom = removeNode(vnode._dom)
+  // 函数组件
+  if (vnode._component) {
+    if(typeof vnode._component.componentWillUnmount === 'function'){
+      vnode._component.componentWillUnmount()
+    }
+  }
+  // 元素文本元素
+  else {
+    if (vnode._dom != null) {
+      vnode._dom = removeNode(vnode._dom)
+    }
+  }
+
+  // 遍历子节点
+  if(Array.isArray(vnode._children)){
+    vnode._children.forEach(unmount)
   }
 
 }

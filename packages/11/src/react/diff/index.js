@@ -37,6 +37,7 @@ export function diff(
     // 取出当前新虚拟dom的props
     let newProps = newVNode.props
 
+
     // 如果旧节点的 _component 存在（ _component 存储类组件的实例），说明实例化过，复用旧节点的实例
     if (oldVNode._component) {
       // 复用旧节点
@@ -88,14 +89,44 @@ export function diff(
     // 类实例上绑定当前组件的真实父节点dom指向
     c._parentDom = parentDom
 
-    // 更新
+    // 生命周期：shouldComponentUpdate
+    let shouldUpdate = true
+    if (!isNew && typeof c.shouldComponentUpdate === 'function') {
+      if (!c.shouldComponentUpdate(newProps, c._nextState)) {
+        shouldUpdate = false
+      }
+    }
+
+    // 获取旧属性，方便生命周期使用
+    let oldProps = oldVNode.props,
+        oldState = c.state
+
+    // 更新属性
     c.state = c._nextState
     c.props = newProps
     c._dirty = false
 
+    // 如果不需要更新，直接return
+    if (!shouldUpdate) return
+
     // 获取新的子节点虚拟dom
     let renderResult = c.render(newProps, c.state)
     renderResult = renderResult?.type === Fragment ? renderResult.props.children : renderResult
+
+    if (!isNew) {
+      // 生命周期：getSnapshotBeforeUpdate
+      let snapshot
+      if (typeof c.getSnapshotBeforeUpdate === 'function') {
+        snapshot = c.getSnapshotBeforeUpdate(oldProps, oldState)
+      }
+
+      // 生命周期：componentDidUpdate
+      if (typeof c.componentDidUpdate === 'function') {
+        c._renderCallbacks.push(() => {
+          c.componentDidUpdate(oldProps, oldState, snapshot)
+        })
+      }
+    }
 
     if (c._renderCallbacks.length) {
       commitQueue.push(c)
@@ -120,8 +151,8 @@ export function diff(
   else if (
     newVNode.props === oldVNode.props
   ) {
-    newVNode._children = oldVNode._children
-    newVNode._dom = oldVNode._dom
+    newVNode._children = oldVNode._children;
+    newVNode._dom = oldVNode._dom;
   }
   // 不可复用文本节点和元素节点
   else {
@@ -142,10 +173,10 @@ function diffElementNodes(
   oldVNode,
   commitQueue
 ) {
-  let oldProps = oldVNode.props
-  let newProps = newVNode.props
-  let nodeType = newVNode.type
-  let i = 0
+  let oldProps = oldVNode.props;
+  let newProps = newVNode.props;
+  let nodeType = newVNode.type;
+  let i = 0;
 
   if (dom == null) {
     if (nodeType === null) {
@@ -180,7 +211,7 @@ function diffElementNodes(
 
   }
 
-  return dom
+  return dom;
 }
 
 export function getDomSibling(vnode, childIndex) {

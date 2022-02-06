@@ -1,11 +1,6 @@
-// import React, { createContext, Component, useState, Fragment, useContext } from 'react'
-// import { render } from 'react-dom'
-// import { render, createContext, Component, createElement, Fragment } from 'preact'
-// import { useContext, useState } from 'preact/hooks'
-// import { memo } from 'preact/compat'
-const React = {
-  createElement
-}
+import { Component, Fragment, createElement, render } from './react'
+
+const React = { createElement }
 
 class Root extends Component {
 
@@ -44,7 +39,7 @@ class Root extends Component {
 
     return (
       <Fragment>
-        <p>Root</p>
+        <p className='p'>Root</p>
         <button
           onClick={() => {
             this.setState({ a: this.state.a + 1 })
@@ -52,7 +47,7 @@ class Root extends Component {
         >
           unmount A
         </button>
-        {this.state.a % 2 !== 0 && <A />}
+        {state.a % 2 !== 0 && <A />}
       </Fragment>
     )
   }
@@ -66,10 +61,10 @@ class A extends Component {
 
   render() {
     return (
-      <div>
+      <p>
         A
         <B />
-      </div>
+      </p>
     )
   }
 
@@ -83,10 +78,10 @@ class B extends Component {
 
   render() {
     return (
-      <div>
+      <p>
         B
         <C />
-      </div>
+      </p>
     )
   }
 
@@ -99,7 +94,7 @@ class C extends Component {
   }
 
   render() {
-    return <div>C</div>
+    return <p>C</p>
   }
 
 }

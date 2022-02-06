@@ -1,4 +1,5 @@
 import { diff } from '.'
+import { Fragment } from '..'
 import { EMPTY_ARR, EMPTY_OBJ } from '../constants'
 import { createVNode } from '../createElement'
 
@@ -49,6 +50,15 @@ export function diffChildren(
       childVNode = newParentVNode._children[i] = createVNode(
         null,
         childVNode,
+        null,
+        null
+      )
+    }
+    // 列表
+    else if (Array.isArray(childVNode)) {
+      childVNode = newParentVNode._children[i] = createVNode(
+        Fragment,
+        { children: childVNode },
         null,
         null
       )
