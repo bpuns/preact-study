@@ -54,7 +54,7 @@ export function diff(
       // 函数组件
       else {
         c = newVNode._component = new Component(newProps)
-        c.render = newType.bind(undefined)
+        c.render = newType
       }
 
       if (!c.state) c.state = {}
@@ -120,8 +120,8 @@ export function diff(
   else if (
     newVNode.props === oldVNode.props
   ) {
-    newVNode._children = oldVNode._children;
-    newVNode._dom = oldVNode._dom;
+    newVNode._children = oldVNode._children
+    newVNode._dom = oldVNode._dom
   }
   // 不可复用文本节点和元素节点
   else {
@@ -142,31 +142,31 @@ function diffElementNodes(
   oldVNode,
   commitQueue
 ) {
-  let oldProps = oldVNode.props;
-  let newProps = newVNode.props;
-  let nodeType = newVNode.type;
-  let i = 0;
+  let oldProps = oldVNode.props
+  let newProps = newVNode.props
+  let nodeType = newVNode.type
+  let i = 0
 
   if (dom == null) {
     if (nodeType === null) {
-      return document.createTextNode(newProps);
+      return document.createTextNode(newProps)
     }
 
-    dom = document.createElement(nodeType);
+    dom = document.createElement(nodeType)
 
   }
 
   if (nodeType === null) {
     if (oldProps !== newProps && dom.data !== newProps) {
-      dom.data = newProps;
+      dom.data = newProps
     }
   } else {
 
-    oldProps = oldVNode.props || EMPTY_OBJ;
+    oldProps = oldVNode.props || EMPTY_OBJ
 
-    diffProps(dom, newProps, oldProps);
+    diffProps(dom, newProps, oldProps)
 
-    i = newVNode.props.children;
+    i = newVNode.props.children
 
     diffChildren(
       dom,
@@ -180,7 +180,7 @@ function diffElementNodes(
 
   }
 
-  return dom;
+  return dom
 }
 
 export function getDomSibling(vnode, childIndex) {

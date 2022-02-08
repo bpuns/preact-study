@@ -1,14 +1,11 @@
 // import React, { createContext, Component, useState, Fragment, useContext } from 'react'
 // import { render } from 'react-dom'
-import { render, createContext, Component, createElement, Fragment } from 'preact'
-import { useContext, useState } from 'preact/hooks'
-import { memo } from 'preact/compat'
+// import { render, createContext, Component, createElement, Fragment } from 'preact'
+// import { useContext, useState } from 'preact/hooks'
+// import { memo } from 'preact/compat'
 const React = {
   createElement
 }
-
-const ctx = createContext()
-const ctx2 = createContext()
 
 class Root extends Component {
 
@@ -43,32 +40,22 @@ class Root extends Component {
 
   render(props, state) {
 
-    console.log('root render')
+    // console.log('render')
 
     return (
       <Fragment>
-        {/* <ctx.Provider value={this.state}> */}
-          <ctx2.Provider value={{ b: this.state.a + 1 }}>
-            <p>Root</p>
-            <button
-              onClick={() => {
-                this.setState({ a: this.state.a + 1 })
-              }}
-            >
-              add
-            </button>
-            <A />
-            {/* <D /> */}
-          </ctx2.Provider>
-        {/* </ctx.Provider> */}
+        <p>Root</p>
+        <button
+          onClick={() => {
+            this.setState({ a: this.state.a + 1 })
+          }}
+        >
+          unmount A
+        </button>
+        {this.state.a % 2 !== 0 && <A />}
       </Fragment>
     )
   }
-}
-
-function D() {
-  console.log('D', this)
-  return <div>D</div>
 }
 
 class A extends Component {
@@ -77,14 +64,7 @@ class A extends Component {
     console.log('A unmount');
   }
 
-  // shouldComponentUpdate() {
-  //   return false
-  // }
-
   render() {
-
-    console.log('A render');
-
     return (
       <div>
         A
@@ -102,9 +82,6 @@ class B extends Component {
   }
 
   render() {
-
-    console.log('B render');
-
     return (
       <div>
         B
@@ -117,35 +94,12 @@ class B extends Component {
 
 class C extends Component {
 
-  static contextType = ctx2
-
-  constructor(props, context) {
-    super(props, context)
-  }
-
   componentWillUnmount() {
     console.log('C unmount');
   }
 
-  // shouldComponentUpdate() {
-  //   return false
-  // }
-
   render() {
-
-    console.log('C render');
-    // console.log('context', this.context)
-
-    return <div>
-      C
-      {/* <ctx.Consumer>
-        {
-          ctx => {
-            return <p>{ctx.a}</p>
-          }
-        }
-      </ctx.Consumer> */}
-    </div>
+    return <div>C</div>
   }
 
 }

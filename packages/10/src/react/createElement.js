@@ -11,9 +11,9 @@ export function createElement(type, props, children) {
   let key = null, ref = null, normalizedProps = {}, i
 
   for (i in props) {
-    if (i == 'key') key = props[i]
-    else if (i == 'ref') ref = props[i]
-    else normalizedProps[i] = props[i]
+    if (i == 'key') key = props[i];
+    else if (i == 'ref') ref = props[i];
+    else normalizedProps[i] = props[i];
   }
 
   if (arguments.length > 2) {
@@ -71,4 +71,8 @@ export function createVNode(type, props, key, ref) {
     constructor: undefined
   }
 
+}
+
+export function Fragment(props) {
+	return props.children;
 }

@@ -49,7 +49,7 @@ export function diff(
       // 函数组件
       else {
         c = newVNode._component = new Component(newProps)
-        c.render = newType.bind(undefined)
+        c.render = newType 
       }
 
     }
