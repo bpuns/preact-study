@@ -36,8 +36,6 @@ export function diff(
     if (oldVNode._component) {
       // 复用旧节点
       c = newVNode._component = oldVNode._component
-      // 把 newProps 赋值给旧的实例上
-      c.props = newProps
     }
     // 没有实例化过
     else {

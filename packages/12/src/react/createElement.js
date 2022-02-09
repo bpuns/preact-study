@@ -68,7 +68,8 @@ export function createVNode(type, props, key, ref) {
     // 如果传入的节点不是 null，undefined，boolean，数字，字符串，那么就不会转为虚拟dom
     // 每个虚拟dom中都有一个 constructor 的自定义属性，一开始为null，一般元素原型上都存在 constructor
     // 所以在这里判断 constructor , 如果不为空，说明当前节点不是合法的虚拟 dom 节点，不处理
-    constructor: undefined
+    constructor: undefined,
+    _depth: 0
   }
 
 }

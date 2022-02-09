@@ -1,102 +1,88 @@
-import { Component, Fragment, createElement, render } from './react'
+import { Component, Fragment, createContext, createElement, render } from './react'
 
 const React = { createElement }
 
-class Root extends Component {
+const ctx1 = createContext()
+const ctx2 = createContext()
+
+class A1 extends Component {
 
   state = {
     a: 1
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      ...prevState,
-      ...nextProps
-    }
-  }
+  render() {
 
-  componentDidMount() {
-    // console.log('componentDidMount', document.querySelector('.p'))
+    console.log('A1 render', this._globalContext)
+
+    return (
+      <ctx1.Provider value={this.state}>
+        <button onClick={() => this.setState({ a: this.state.a + 1 })}>update</button>
+        <h2>A1</h2>
+        <B1 />
+        <B2 />
+      </ctx1.Provider>
+    )
   }
+}
+
+class B1 extends Component {
 
   shouldComponentUpdate() {
-    // console.log('shouldComponentUpdate', ...arguments)
-    return true
-  }
-
-  getSnapshotBeforeUpdate() {
-    // console.log('getSnapshotBeforeUpdate', ...arguments)
-    return 11
-  }
-
-  componentDidUpdate() {
-    // console.log('componentDidUpdate', ...arguments)
-  }
-
-  render(props, state) {
-
-    // console.log('render')
-
-    return (
-      <Fragment>
-        <p className='p'>Root</p>
-        <button
-          onClick={() => {
-            this.setState({ a: this.state.a + 1 })
-          }}
-        >
-          unmount A
-        </button>
-        {state.a % 2 !== 0 && <A />}
-      </Fragment>
-    )
-  }
-}
-
-class A extends Component {
-
-  componentWillUnmount() {
-    console.log('A unmount');
+    return false
   }
 
   render() {
-    return (
-      <p>
-        A
-        <B />
-      </p>
-    )
+
+    console.log('B1 render', this._globalContext)
+
+    return <ctx2.Provider value={{ b: 2 }}>
+      <h2>B1</h2>
+      <C1 />
+    </ctx2.Provider>
   }
 
 }
 
-class B extends Component {
+class B2 extends Component {
 
-  componentWillUnmount() {
-    console.log('B unmount');
+  static contextType = ctx1
+
+  shouldComponentUpdate() {
+    return false
   }
 
   render() {
-    return (
-      <p>
-        B
-        <C />
-      </p>
-    )
+
+    console.log('B2 render', this._globalContext)
+
+    return <h2>B2</h2>
   }
 
 }
 
-class C extends Component {
+class C1 extends Component {
 
-  componentWillUnmount() {
-    console.log('C unmount');
+  static contextType = ctx1
+
+  shouldComponentUpdate() {
+    return false
   }
 
   render() {
-    return <p>C</p>
+
+    console.log('C1 render', this._globalContext)
+
+    return <Fragment>
+      <h2>C1</h2>
+      <ctx1.Consumer>
+        {ctx => ctx.a}
+      </ctx1.Consumer>
+    </Fragment>
   }
 
 }
 
-render(<Root />, root)
+const a = <A1 />
+
+render(a, root)

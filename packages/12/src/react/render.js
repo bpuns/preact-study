@@ -31,7 +31,8 @@ export function render(newVnode, parentDom) {
     oldVnode
       ? oldVnode._dom
       : parentDom.firstChild,
-    commitQueue
+    commitQueue,
+    EMPTY_OBJ
   )
 
   commitRoot(commitQueue)

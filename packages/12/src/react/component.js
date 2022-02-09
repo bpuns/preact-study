@@ -43,13 +43,13 @@ Component.prototype.setState = function (update, callback) {
 /** 强制更新
  * @param {*} callback 
  */
-Component.prototype.forceUpdate = function(callback) {
-	if (this._vnode) {
+Component.prototype.forceUpdate = function (callback) {
+  if (this._vnode) {
     // 添加一个 _force 标识, 之后可以借助这个标识跳过 shouldComponentUpdate 生命周期
-		this._force = true
-		if (callback) this._renderCallbacks.push(callback)
-		enqueueRender(this)
-	}
+    this._force = true
+    if (callback) this._renderCallbacks.push(callback)
+    enqueueRender(this)
+  }
 }
 
 // 存储一个更新队列
@@ -64,14 +64,15 @@ export function enqueueRender(c) {
 }
 
 function process() {
-  rerenderQueue.forEach(c => {
+  let queue = rerenderQueue.sort((a, b) => a._depth - b._depth)
+  rerenderQueue = []
+  queue.forEach(c => {
     c._dirty && renderComponent(c)
   })
-  rerenderQueue = []
 }
 
 function renderComponent(component) {
-  
+
   // diff
   const parentDom = component._parentDom
   const newVNode = component._vnode
@@ -85,7 +86,8 @@ function renderComponent(component) {
       newVNode,
       oldVNode,
       newVNode._dom,
-      commitQueue
+      commitQueue,
+      component._globalContext
     )
 
     commitRoot(commitQueue)

@@ -42,8 +42,6 @@ export function diff(
     if (oldVNode._component) {
       // 复用旧节点
       c = newVNode._component = oldVNode._component
-      // 把 newProps 赋值给旧的实例上
-      c.props = newProps
     }
     // 没有实例化过
     else {
@@ -55,11 +53,7 @@ export function diff(
       // 函数组件
       else {
         c = newVNode._component = new Component(newProps)
-<<<<<<< HEAD
         c.render = newType
-=======
-        c.render = newType.bind(undefined)
->>>>>>> ca89dcde7dd6033addffbafdbfb2db22bf465057
       }
 
       if (!c.state) c.state = {}
@@ -96,14 +90,14 @@ export function diff(
     // 生命周期：shouldComponentUpdate
     let shouldUpdate = true
     if (!c._force && !isNew && typeof c.shouldComponentUpdate === 'function') {
-      if (!c.shouldComponentUpdate(newProps, c._nextState)) {
+      if (c.shouldComponentUpdate(newProps, c._nextState) === false) {
         shouldUpdate = false
       }
     }
 
     // 获取旧属性，方便生命周期使用
     let oldProps = oldVNode.props,
-        oldState = c.state
+      oldState = c.state
 
     // 更新属性
     c.state = c._nextState

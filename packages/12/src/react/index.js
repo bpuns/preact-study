@@ -6,5 +6,8 @@ export {
 export {
   Component
 } from './component'
+export {
+  createContext
+} from './createContext'
 
 export { render } from './render'

@@ -10,13 +10,15 @@ import { diffProps } from './props'
  * @param {*} oldParentVNode   可复用的虚拟dom节点
  * @param {*} oldDom           当前父节点下的第一个真实dom节点
  * @param {*} commitQueue      存放diff完成之后需要执行的任务对象
+ * @param {*} globalContext    globalContext
  */
 export function diff(
   parentDom,
   newVNode,
   oldVNode,
   oldDom,
-  commitQueue
+  commitQueue,
+  globalContext
 ) {
 
   // 取出当前虚拟dom节点的type，判断当前是 函数类组件 还是 原生组件
@@ -37,24 +39,35 @@ export function diff(
     // 取出当前新虚拟dom的props
     let newProps = newVNode.props
 
+    // 获取静态属性contextType
+    const contextType = newType.contextType
+    // 获取context的provider方法
+    const provider = contextType && globalContext[contextType._id]
+    // 注册错误处理
+    if (contextType && !provider) {
+      throw new Error(`<${newType.name}/>中注册的context作用域错误`)
+    }
+    // 获取当前组件要注入的 context
+    const componentContext = contextType ? (
+      provider ? provider.props.value : contextType._defaultValue
+    ) : EMPTY_OBJ
+
 
     // 如果旧节点的 _component 存在（ _component 存储类组件的实例），说明实例化过，复用旧节点的实例
     if (oldVNode._component) {
       // 复用旧节点
       c = newVNode._component = oldVNode._component
-      // 把 newProps 赋值给旧的实例上
-      c.props = newProps
     }
     // 没有实例化过
     else {
 
       // 类组件
       if (newType.isReactComponent === Component.isReactComponent) {
-        c = newVNode._component = new newType(newProps)
+        c = newVNode._component = new newType(newProps, componentContext)
       }
       // 函数组件
       else {
-        c = newVNode._component = new Component(newProps)
+        c = newVNode._component = new Component(newProps, componentContext)
         c.render = newType
       }
 
@@ -62,6 +75,8 @@ export function diff(
       Array.isArray(c._renderCallbacks) || (c._renderCallbacks = [])
 
       isNew = true
+
+      if (provider) provider.sub(c)
 
     }
 
@@ -92,7 +107,7 @@ export function diff(
     // 生命周期：shouldComponentUpdate
     let shouldUpdate = true
     if (!c._force && !isNew && typeof c.shouldComponentUpdate === 'function') {
-      if (!c.shouldComponentUpdate(newProps, c._nextState)) {
+      if (c.shouldComponentUpdate(newProps, c._nextState) === false) {
         shouldUpdate = false
       }
     }
@@ -105,12 +120,13 @@ export function diff(
     c.state = c._nextState
     c.props = newProps
     c._dirty = c._force = false
+    c.context = componentContext
+    c._globalContext = globalContext
 
     // 如果不需要更新，直接return
     if (!shouldUpdate) return
 
-    // 获取新的子节点虚拟dom
-    let renderResult = c.render(newProps, c.state)
+    let renderResult = c.render(newProps, c.state, componentContext)
     renderResult = renderResult?.type === Fragment ? renderResult.props.children : renderResult
 
     if (!isNew) {
@@ -132,6 +148,11 @@ export function diff(
       commitQueue.push(c)
     }
 
+    // 如果当前是Provider组件，那么重写globalContext
+    if (c.getChildContext != null) {
+      globalContext = Object.assign(Object.assign({}, globalContext), c.getChildContext())
+    }
+
     // 当前节点基本处理完毕
     diffChildren(
       // 当前虚拟节点的父节点的真实dom元素
@@ -143,7 +164,8 @@ export function diff(
       // 旧虚拟dom节点
       oldVNode,
       oldDom,
-      commitQueue
+      commitQueue,
+      globalContext
     )
 
   }
@@ -161,7 +183,8 @@ export function diff(
       oldVNode._dom,
       newVNode,
       oldVNode,
-      commitQueue
+      commitQueue,
+      globalContext
     )
   }
 
@@ -171,7 +194,8 @@ function diffElementNodes(
   dom,
   newVNode,
   oldVNode,
-  commitQueue
+  commitQueue,
+  globalContext
 ) {
   let oldProps = oldVNode.props;
   let newProps = newVNode.props;
@@ -206,7 +230,8 @@ function diffElementNodes(
       oldVNode,
       // 如果旧节点存在子节点，那么就找到旧的第一个子节点(第一个存在_dom的子节点上)的真实dom元素
       oldVNode._children && getDomSibling(oldVNode, 0),
-      commitQueue
+      commitQueue,
+      globalContext
     )
 
   }

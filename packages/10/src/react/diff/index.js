@@ -42,8 +42,6 @@ export function diff(
     if (oldVNode._component) {
       // 复用旧节点
       c = newVNode._component = oldVNode._component
-      // 把 newProps 赋值给旧的实例上
-      c.props = newProps
     }
     // 没有实例化过
     else {
@@ -55,11 +53,7 @@ export function diff(
       // 函数组件
       else {
         c = newVNode._component = new Component(newProps)
-<<<<<<< HEAD
         c.render = newType
-=======
-        c.render = newType.bind(undefined)
->>>>>>> ca89dcde7dd6033addffbafdbfb2db22bf465057
       }
 
       if (!c.state) c.state = {}
@@ -95,157 +89,153 @@ export function diff(
 
     // 生命周期：shouldComponentUpdate
     let shouldUpdate = true
-<<<<<<< HEAD
     if (!c._force && !isNew && typeof c.shouldComponentUpdate === 'function') {
-=======
-    if (!isNew && typeof c.shouldComponentUpdate === 'function') {
->>>>>>> ca89dcde7dd6033addffbafdbfb2db22bf465057
-      if (!c.shouldComponentUpdate(newProps, c._nextState)) {
-        shouldUpdate = false
+        if (c.shouldComponentUpdate(newProps, c._nextState) === false) {
+          shouldUpdate = false
+        }
       }
-    }
 
-    // 获取旧属性，方便生命周期使用
-    let oldProps = oldVNode.props,
+      // 获取旧属性，方便生命周期使用
+      let oldProps = oldVNode.props,
         oldState = c.state
 
-    // 更新属性
-    c.state = c._nextState
-    c.props = newProps
-    c._dirty = c._force = false
+      // 更新属性
+      c.state = c._nextState
+      c.props = newProps
+      c._dirty = c._force = false
 
-    // 如果不需要更新，直接return
-    if (!shouldUpdate) return
+      // 如果不需要更新，直接return
+      if (!shouldUpdate) return
 
-    // 获取新的子节点虚拟dom
-    let renderResult = c.render(newProps, c.state)
-    renderResult = renderResult?.type === Fragment ? renderResult.props.children : renderResult
+      // 获取新的子节点虚拟dom
+      let renderResult = c.render(newProps, c.state)
+      renderResult = renderResult?.type === Fragment ? renderResult.props.children : renderResult
 
-    if (!isNew) {
-      // 生命周期：getSnapshotBeforeUpdate
-      let snapshot
-      if (typeof c.getSnapshotBeforeUpdate === 'function') {
-        snapshot = c.getSnapshotBeforeUpdate(oldProps, oldState)
+      if (!isNew) {
+        // 生命周期：getSnapshotBeforeUpdate
+        let snapshot
+        if (typeof c.getSnapshotBeforeUpdate === 'function') {
+          snapshot = c.getSnapshotBeforeUpdate(oldProps, oldState)
+        }
+
+        // 生命周期：componentDidUpdate
+        if (typeof c.componentDidUpdate === 'function') {
+          c._renderCallbacks.push(() => {
+            c.componentDidUpdate(oldProps, oldState, snapshot)
+          })
+        }
       }
 
-      // 生命周期：componentDidUpdate
-      if (typeof c.componentDidUpdate === 'function') {
-        c._renderCallbacks.push(() => {
-          c.componentDidUpdate(oldProps, oldState, snapshot)
-        })
+      if (c._renderCallbacks.length) {
+        commitQueue.push(c)
       }
-    }
 
-    if (c._renderCallbacks.length) {
-      commitQueue.push(c)
-    }
+      // 当前节点基本处理完毕
+      diffChildren(
+        // 当前虚拟节点的父节点的真实dom元素
+        parentDom,
+        // 当前节点的子节点，如果不是数组，包裹成一个数组
+        Array.isArray(renderResult) ? renderResult : [renderResult],
+        // 当前的新虚拟dom节点
+        newVNode,
+        // 旧虚拟dom节点
+        oldVNode,
+        oldDom,
+        commitQueue
+      )
 
-    // 当前节点基本处理完毕
-    diffChildren(
-      // 当前虚拟节点的父节点的真实dom元素
-      parentDom,
-      // 当前节点的子节点，如果不是数组，包裹成一个数组
-      Array.isArray(renderResult) ? renderResult : [renderResult],
-      // 当前的新虚拟dom节点
-      newVNode,
-      // 旧虚拟dom节点
-      oldVNode,
-      oldDom,
-      commitQueue
-    )
+    }
+    // 文本节点（可复用）
+    else if (
+      newVNode.props === oldVNode.props
+    ) {
+      newVNode._children = oldVNode._children;
+      newVNode._dom = oldVNode._dom;
+    }
+    // 不可复用文本节点和元素节点
+    else {
+      // 等diffChildren执行完成之后再给 newVNode._dom 赋值，避免子节点把 newVNode._dom 重写了
+      newVNode._dom = diffElementNodes(
+        oldVNode._dom,
+        newVNode,
+        oldVNode,
+        commitQueue
+      )
+    }
 
   }
-  // 文本节点（可复用）
-  else if (
-    newVNode.props === oldVNode.props
+
+  function diffElementNodes(
+    dom,
+    newVNode,
+    oldVNode,
+    commitQueue
   ) {
-    newVNode._children = oldVNode._children;
-    newVNode._dom = oldVNode._dom;
-  }
-  // 不可复用文本节点和元素节点
-  else {
-    // 等diffChildren执行完成之后再给 newVNode._dom 赋值，避免子节点把 newVNode._dom 重写了
-    newVNode._dom = diffElementNodes(
-      oldVNode._dom,
-      newVNode,
-      oldVNode,
-      commitQueue
-    )
-  }
+    let oldProps = oldVNode.props;
+    let newProps = newVNode.props;
+    let nodeType = newVNode.type;
+    let i = 0;
 
-}
+    if (dom == null) {
+      if (nodeType === null) {
+        return document.createTextNode(newProps)
+      }
 
-function diffElementNodes(
-  dom,
-  newVNode,
-  oldVNode,
-  commitQueue
-) {
-  let oldProps = oldVNode.props;
-  let newProps = newVNode.props;
-  let nodeType = newVNode.type;
-  let i = 0;
+      dom = document.createElement(nodeType)
 
-  if (dom == null) {
+    }
+
     if (nodeType === null) {
-      return document.createTextNode(newProps)
+      if (oldProps !== newProps && dom.data !== newProps) {
+        dom.data = newProps
+      }
+    } else {
+
+      oldProps = oldVNode.props || EMPTY_OBJ
+
+      diffProps(dom, newProps, oldProps)
+
+      i = newVNode.props.children
+
+      diffChildren(
+        dom,
+        Array.isArray(i) ? i : [i],
+        newVNode,
+        oldVNode,
+        // 如果旧节点存在子节点，那么就找到旧的第一个子节点(第一个存在_dom的子节点上)的真实dom元素
+        oldVNode._children && getDomSibling(oldVNode, 0),
+        commitQueue
+      )
+
     }
 
-    dom = document.createElement(nodeType)
+    return dom;
+  }
+
+  export function getDomSibling(vnode, childIndex) {
+
+    let sibling
+    for (; childIndex < vnode._children.length; childIndex++) {
+      sibling = vnode._children[childIndex]
+      if (sibling != null && sibling._dom != null) {
+        return sibling._dom
+      }
+    }
 
   }
 
-  if (nodeType === null) {
-    if (oldProps !== newProps && dom.data !== newProps) {
-      dom.data = newProps
-    }
-  } else {
+  /** 执行 存放diff完成之后需要执行的任务对象
+   * @param {*} commitQueue 
+   */
+  export function commitRoot(commitQueue) {
 
-    oldProps = oldVNode.props || EMPTY_OBJ
-
-    diffProps(dom, newProps, oldProps)
-
-    i = newVNode.props.children
-
-    diffChildren(
-      dom,
-      Array.isArray(i) ? i : [i],
-      newVNode,
-      oldVNode,
-      // 如果旧节点存在子节点，那么就找到旧的第一个子节点(第一个存在_dom的子节点上)的真实dom元素
-      oldVNode._children && getDomSibling(oldVNode, 0),
-      commitQueue
-    )
-
-  }
-
-  return dom;
-}
-
-export function getDomSibling(vnode, childIndex) {
-
-  let sibling
-  for (; childIndex < vnode._children.length; childIndex++) {
-    sibling = vnode._children[childIndex]
-    if (sibling != null && sibling._dom != null) {
-      return sibling._dom
-    }
-  }
-
-}
-
-/** 执行 存放diff完成之后需要执行的任务对象
- * @param {*} commitQueue 
- */
-export function commitRoot(commitQueue) {
-
-  commitQueue.forEach(c => {
-    commitQueue = c._renderCallbacks
-    c._renderCallbacks = []
-    commitQueue.forEach(cb => {
-      cb.call(c)
+    commitQueue.forEach(c => {
+      commitQueue = c._renderCallbacks
+      c._renderCallbacks = []
+      commitQueue.forEach(cb => {
+        cb.call(c)
+      })
     })
-  })
 
-}
+  }
 

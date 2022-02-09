@@ -91,7 +91,6 @@ function renderComponent(component) {
     commitRoot(commitQueue)
   }
 
-
 }
 
 Component.isReactComponent = Symbol('isReactComponent')

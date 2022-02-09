@@ -11,6 +11,7 @@ import { createVNode } from '../createElement'
  * @param {*} oldParentVNode   旧的虚拟dom节点
  * @param {*} oldDom           oldDom
  * @param {*} commitQueue      存放diff完成之后需要执行的任务对象
+* @param {*}  globalContext    globalContext
  */
 export function diffChildren(
   parentDom,
@@ -18,7 +19,8 @@ export function diffChildren(
   newParentVNode,
   oldParentVNode,
   oldDom,
-  commitQueue
+  commitQueue,
+  globalContext
 ) {
 
   // 取到旧的虚拟dom的子节点
@@ -72,6 +74,7 @@ export function diffChildren(
     if (childVNode == null) continue
 
     childVNode._parent = newParentVNode
+    childVNode._depth = newParentVNode._depth + 1
 
     // 取旧节点，判断是否是同一个节点，为了之后diff
     let oldVNode = oldChildren[i]
@@ -109,7 +112,8 @@ export function diffChildren(
       childVNode,
       oldVNode || EMPTY_OBJ,
       oldDom,
-      commitQueue
+      commitQueue,
+      globalContext
     )
 
     // diff后会在 虚拟dom 上挂载上一个 _dom 保存真实的dom元素，取出来，后面要用
