@@ -1,24 +1,22 @@
-> 个人认为学习源码无非以下几种原因，一为了面试，二为了学习一种解决方法，三是为了解其原理，开发时知道怎么才能更好的优化。本文是以`Preact`这个类`React`库作为参考，之所以不用`React`官方源码为参考，首先是并没有深入研究过其源码，近2万行的代码阅读起来确实是一个负担，其次`Preact`很小，不到2000行的代码，学习起来很方便，而且基本思想是一致的。 最后，我对`vue`更感兴趣一点，以后应该会花更多的时间去研究`vue`相关的内容
+> 本文是以`Preact`这个类`React`库作为参考所写，具体的实现代码已经托管到[github](https://github.com/bpuns/preact-study)
 
-# 1	路线
+# 1	实现路线
 
-首先需要先了解一下什么是虚拟`dom`，了解完成之后再学习一下怎么创建虚拟`dom`，也就是`createElement`函数的基本实现。
+首先需要先了解一下什么是虚拟`dom`，了解完成之后再学习一下怎么创建虚拟`dom`，也就是`createElement`函数的实现
 
-接着，就要把这个虚拟`dom`映射成真实的`dom`，那么在映射的过程中，会先简单地了解一下`diff`算法的**基本流程**，接着就可以把这个**基本的流程**转化成具体的代码实现，使用简易版本的`diff`算法把虚拟`dom`转换成真实的`dom`。
+接着，就要把这个虚拟`dom`映射成真实的`dom`，那么在映射的过程中，会先简单地了解一下`diff`算法的**基本流程**，接着就可以把这个**基本的流程**转化成具体的代码实现，使用简易版本的`diff`算法把虚拟`dom`转换成真实的`dom`
 
-初次渲染完成后，就要学习一下`diff`算法**“复用节点”**，那么复用节点其实还可以细分为两部分，一部分是单节点的`diff`，这个部分其实是较为简单的，不需要涉及到太多的逻辑，最麻烦的其实就是对子节点的复用，有道面试题大家肯定做过，也就是为什么循环列表的时候，要给每个子节点设置一个`key`，这一节简单过一下就好，因为个人认为`Preact`的`diff`算法实现还有优化空间。
+初次渲染完成后，就要学习一下`diff`算法**“节点复用”**，那么复用节点其实还可以细分为两部分，一部分是单节点的`diff`，这个部分其实是较为简单的，不需要涉及到太多的逻辑，最麻烦的其实就是对子节点的复用，有道面试题大家肯定做过，也就是为什么循环列表的时候，要给每个子节点设置一个`key`
 
-当学习完前面的三节之后，其实`React`的核心思想就已经学习完成了，接下来是在这个基础上面添加新的东西。那么要添加的第一个东西就是**函数组件**和**类组件**，函数组件的`hook`和类组件的`setState`，生命周期的实现在这一节都不讲，这一小节只讲怎么将函数组件和类组件渲染到页面上。
+当学习完前面的三节之后，其实类`React`思想的实现就已经完成了，接下来都是在这个基础上面添加新东西。那么要添加的第一个东西就是**函数组件**和**类组件**，函数组件的`hook`和类组件的`setState`，生命周期的实现在这一节都不讲，这一小节只讲怎么将函数组件和类组件渲染到页面上
 
-接下来就是`setState`的实现，在很多面试中都会考到`setState`的合并更新的原理，那么在讲述着一小节的时候，会通过一个小`demo`来说明一下合并更新的原理。
+接下来就是`setState`的实现，在面试中经常考到`setState`的合并更新原理，那么在讲述着一小节的时候，会分别说明`React`的`17`和`18`版本的区别，再介绍一下如何使用js的任务队列机制来实现合并更新
 
-那么说完`setState`之后，就是类组件生命周期的实现了，等生命周期实现完成之后，一个小型的类`React`框架就已经完成了。
+说完`setState`之后，就是类组件生命周期的实现了，等生命周期实现完成之后，一个小型的类`React`框架就已经完成了。
 
-完成之后，我们再学习下`createContext`的实现
+最后学习`context`和`hooks`的实现
 
-最后，就是`React`中的`hooks`的实现
-
-至于`fiber`并不打算讲，因为至始至终我都对`fiber`并不是很看好，虽然`fiber`的实现挺有意思的，但是它并不是为了性能而生的，只是为了一个`penging`效果，官方这么大费周章的搞一个`fiber`，还不如多研究一些最佳实践“教育开发者”，或者直接把`React`回炉重造，做一个没有历史包袱的大版本更新
+那么`React18`的`concurrent mode`会说明一下基本原理，并不会去实现它
 
 # 2	虚拟dom
 
@@ -32,7 +30,7 @@
 
 为什么需要虚拟`dom`？我们可以看一下尤雨溪在知乎的一个[回答](https://www.zhihu.com/question/31809713)，总结下来借助虚拟`dom`构建的项目的优点其实就只有一个：**"可维护性高"**。注意，这里的优点是不包括性能的，也就是说虚拟`dom`并不会带来性能上的提升。我们可以先看下最古老的前端项目是怎么实现页面交互的
 
-先有一个初始的`dom`，通过接口获取初始数据，接着通过操作`dom`把数据渲染到页面上，不断循环
+先有一个初始的`dom`，通过接口获取初始数据，接着通过操作`dom`把数据渲染到页面上，以此类推
 
 ![](image/2.png)
 
@@ -40,13 +38,11 @@
 
 ![](image/3.png)
 
-需要注意的是，框架的底层依然是操作`dom`，并且在修改数据和操作`dom`之前多了一层`diff`，`diff`并不是没有代价的，特别是在类`React`框架中，如果不借助`shouldComponentUpdate`或`memo`等方法，这个代价会变得非常的巨大，某些时候，可能还需要借助`immutableJs`或`immerJs`等库来减少 `shouldComponentUpdate`和`memo`内部的复杂度 。所以`React`的灵活也伴随着致命的风险，如果优化的不够好，那么意味着灾难
-
-
+需要注意的是，框架的底层依然是操作`dom`，并且在修改数据和操作`dom`之前多了一层`diff`，`diff`并不是没有代价的，特别是在类`React`框架中，如果不借助`shouldComponentUpdate`或`memo`等方法，这个代价会变得非常的巨大，某些时候，可能还需要借助`immutableJs`或`immerJs`等库来减少 `shouldComponentUpdate`和`memo`比较的复杂度 。所以`React`的灵活也伴随着风险
 
 ## 2.3	虚拟dom属性说明
 
-现在来了解一下虚拟`dom`的基本结构长什么样子，下面所展示的结构为了好理解为最**精简版本**（`props`甚至不支持`id`属性），但麻雀虽小，五脏俱全
+现在来了解一下虚拟`dom`的基本结构长什么样子，下面所展示的结构为了好理解为最**精简版本**（`props`甚至不支持`id`属性），为了方便理解
 
 ```ts
 type ArrayType<T> = T | T[]
@@ -56,9 +52,11 @@ type LegalVNode = VNode | string | number | bigint | boolean | null | undefined
 interface VNode {
   type: null | string | Function,
   props: Partial<{
+    id: string
     style: Partial<CSSStyleDeclaration>,
     className: string,
     onClick: Function,
+    onCaptureClick: Function,
     children: ArrayType<LegalVNode>
   }>,
   key: keyof any,
@@ -73,7 +71,7 @@ interface VNode {
 
 ### 2.3.1	type
 
-这个`type`是用来描述当前虚拟`dom`的类型的，一般情况下，会遇到三类
+这个`type`是用来描述当前虚拟`dom`的类型，一般情况下，会遇到三类
 
 - 元素节点，即`nodeType`为1的`dom`节点
 - 文本节点，即`nodeType`为3的`dom`节点
@@ -91,7 +89,7 @@ interface VNode {
 { type: null }
 ```
 
-如果是函数组件/类组件，`type`直接存储这个方法就行，因为类其实也是方法的一种
+如果是函数组件/类组件，`type`直接存储方法（类其实也是方法的一种）
 
 ```js
 { type: Component }
@@ -99,7 +97,7 @@ interface VNode {
 
 ### 2.3.2	props
 
-`props`这里用来存储当前节点的绑定的属性，比如`className`，`style`和绑定的事件
+`props`这里用来存储当前节点绑定的属性，比如`className`，`style`和事件
 
 需要注意的是，在虚拟`dom`中，还存在一个`children`，用来保存当前节点的子节点。如果当前节点只有一个子节点的话，那么`children`就是这个唯一子节点的值，如下
 
@@ -150,7 +148,7 @@ interface VNode {
 - 函数/类组件
 - 元素/文本节点
 
-那么文本节点在`2.3.3`说了，为了方便比较也会转换成虚拟`dom`，也就是说，当前节点的`constructor`如果能够取到值，那么肯定是开发者传进来了什么不好处理的值，直接`return`，不处理就行
+那么文本节点在`2.3.3`说了，为了方便比较也会转换成虚拟`dom`，也就是说，当前节点的`constructor`如果能够取到值，那么肯定是开发者传进来了什么不好处理的值，直接`break`，不处理就行
 
 ### 2.3.5	其余属性
 
@@ -199,11 +197,11 @@ interface VNode {
 
 到现在为止，知道了如何创建虚拟`dom`，现在的目标是把这个`虚拟dom`树渲染到页面上，但是在具体的学习渲染之前，需要先了解`diff`算法的基本流程。当开发者调用`render`函数的时候，一般情况下，需要传递两个参数，第一个参数为初次渲染的虚拟`dom`，第二个参数为这个虚拟`dom`存放的容器
 
-<img src="image/10.png"  style="zoom: 67%;" />
+<img src="image/code-164476514394025.png" alt="code" style="zoom:50%;" />
 
 开发者可以重复调用`render`重新渲染，`render`内部会比较两个虚拟`dom`哪里发生了变化，然后做最小量更新。为了验证重新调用`render`之后页面上的`div`是否是重新生成的，可以做下面这个测试，在第一次渲染完成之后，获取页面中唯一的`div`对象，再次渲染之后，比较现在的`div`是否是同一个
 
-<img src="image/11.png" style="zoom:67%;" />
+<img src="image/code-164476517675126.png" alt="code" style="zoom:50%;" />
 
 具体的代码实现我已经放在`git`仓库`packages/2`文件夹下。运行起来后点击`button`可以看到，控制台打印中，两个`div`对象确实是同一个
 
@@ -215,7 +213,7 @@ interface VNode {
 
 <img src="image/12.png" style="zoom: 50%;" />
 
-那么《同层比较》其实可以引导出两个逻辑，一个是在同层中寻找可以复用的节点，寻找完成之后，`diff`可以复用的新旧节点的属性，处理完成之后，接着处理子节点，于是，就可以抽象出两个方法
+那么”同层比较“其实可以引导出两个逻辑，一个是在同层中寻找可以复用的节点，寻找完成之后，`diff`可以复用新旧节点的属性，处理完成之后，接着处理子节点，于是，就可以抽象出两个方法
 
 - **diff：** `diff`可以复用的新旧节点（处理属性，事件绑定等）
 - **diffChildren：** 
@@ -390,7 +388,7 @@ declare function diffProps(
 
 ### 4.3.2	事件绑定
 
-`Preact`的事件绑定与`React`不同，`React`自己实现了一套[事件委托机制](https://juejin.cn/post/6927981303313006599)，把所有的事件全部绑定到同一个根节点上，通过自己实现一套事件捕获与冒泡机制实现事件绑定。这里主要学习一下`Preact`是如何实现事件绑定机制的。在`js`中，事件绑定分为两种，一种是捕获阶段，一种是冒泡阶段，同样，`React`中也分别实现了两种事件绑定方式，命名方式如下
+`Preact`的事件绑定与`React`不同，`React`自己实现了一套事件委托机制，把所有的事件全部绑定到同一个根节点上，通过自己实现一套事件捕获与冒泡机制实现事件绑定。这里主要学习一下`Preact`是如何实现事件绑定机制的。在`js`中，事件绑定分为两种，一种是捕获阶段，一种是冒泡阶段，在虚拟dom中，通过不同的命名方式进行区分捕获与冒泡，命名方式如下
 
 - **onCatureClick：** 事件捕获阶段触发
 - **onClick：** 事件冒泡阶段触发
@@ -425,7 +423,7 @@ function eventProxyCapture(e) {
 
 > 节点复用整体逻辑见 [/packages/5](https://github.com/bpuns/Preact-study/blob/master/packages/5)，可以使用 `$ npm run 5` 启动
 
-接下来就是`diff`算法的核心，如何从旧节点中寻找可以复用的节点，`diff`完成之后如何排列`dom`的位置。市面上有很多套`diff`算法，个人觉得`Preact`的`diff`算法并不是最好的，学有余力的同学可以去了解以下别的`diff`算法。接下来就简述一下`Preact`的`diff`算法是如何实现的，需要注意的是，为了方便理解，以下的`diff`算法简略了一些小细节
+接下来就是`diff`算法的核心，如何从旧节点中寻找可以复用的节点，`diff`完成之后如何排列`dom`的位置。接下来就简述一下`Preact`的`diff`算法是如何实现的，需要注意的是，为了方便理解，以下的`diff`算法简略了一些小细节
 
 ## 5.1	key的作用
 
@@ -640,6 +638,10 @@ newParentVNode._dom = childDom
 <img src="image/image-20220202001035713.png" style="zoom:60%;" />
 
 但是这还没有结束，因为在`React16`中新增了 `Fragment`组件，这意味着`render`可能并不会返回唯一的一个根节点
+
+
+
+
 
 # 7	Fragment
 
@@ -870,8 +872,6 @@ shouldComponentUpdate?(
 
 <img src="image/code-16443002790993.png" alt="code" style="zoom:50%;" />
 
-
-
 ## 10.2	getSnapshotBeforeUpdate/componentDidUpdate
 
 `getSnapshotBeforeUpdate`需要和`componentDidUpdate`合起来一起看，首先，先看一下两者的类型定义
@@ -909,7 +909,7 @@ componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: S
 
 <img src="image/image-20220209103510739.png" alt="image-20220209103510739" style="zoom: 67%;" />
 
-当`A1`的内容发生改变之后，`Preact`会把需要更新的组件添加一个标识 `_dirty`赋值为`true`，并把`A1`，`B2`，`C1`全部推到 `rerenderQueue` 中，从队列中索引为0的位置开始遍历，每个节点向下递归更新，当前，需要判断一下当前更新队列中的组件实例`_dirty`是否为`true`，因为如果不为`true`，说明已经处理过了，不需要更新
+当`A1`的内容发生改变之后，`Preact`会在需要更新的组件上添加一个标识 `_dirty`，并赋值为`true`。并把`A1`，`B2`，`C1`全部推到 `rerenderQueue` 中，从队列中索引为0的位置开始遍历，每个节点向下递归更新，所以需要判断一下当前更新队列中的组件实例`_dirty`是否为`true`，因为如果不为`true`，说明已经处理过了，不需要更新
 
 <img src="image/image-20220209102636513.png" alt="image-20220209102636513" style="zoom:70%;" />
 
@@ -917,7 +917,7 @@ componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: S
 
 <img src="image/image-20220209104408871.png" alt="image-20220209104408871" style="zoom:70%;" />
 
-那`rerenderQueue`设置成一个数组有什么作用呢？如果不设置为一个数组，此时，`B1`添加一个`shouldComponentUpdate`生命周期，直接阻止更新，`A1`的`Provider`发生改变，从`A1`开始向下递归更新，那么`C1`的消费行为在整个页面的生命周期中就是无效行为
+那`rerenderQueue`如果不设置为一个数组，此时，`B1`添加一个`shouldComponentUpdate`生命周期，直接阻止更新，`A1`的`Provider`发生改变，从`A1`开始向下递归更新，那么`C1`的消费行为在整个页面的生命周期中就是无效行为
 
 <img src="image/image-20220209103642687.png" alt="image-20220209103642687" style="zoom:67%;" />
 
@@ -943,25 +943,25 @@ componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: S
 
 在`diff`的入口，`Preact`会准备一个空对象，名为`globalContext`
 
-<img src="image/image-20220209135759761.png" alt="image-20220209135759761" style="zoom:50%;" />
+<img src="image/image-20220209135759761.png" alt="image-20220209135759761" style="zoom:60%;" />
 
 首先，在`diff` `A1`这个大节点（可以看成一个函数组件）的时候，发现其中使用了 `ctx1.Provider`，那么内部会干两件事情
 
 - 浅拷贝一份`globalContext`
-- 给浅拷贝的`globalContext`上添加一个`key`为 `ctx1.id`，`value`为`ctx1.Provider`的实例的项
+- 给浅拷贝的`globalContext`对象上添加一个`key`为 `ctx1.id`，`value`为`ctx1.Provider`的实例的项
 
 接着，把浅拷贝的`globalContext`代替旧的`globalContext`，传递给 `B1` 和 `B2`
 
-<img src="image/image-20220209140008779.png" alt="image-20220209140008779" style="zoom: 50%;" />
+<img src="image/image-20220209140008779.png" alt="image-20220209140008779" style="zoom: 60%;" />
 
 那么在`diff` `B1`这个大节点的时候，发现其中使用了 `ctx2.Provider`，那么内部会干两件事情
 
 - 浅拷贝一份之前浅拷贝过的`globalContext`
-- 给浅拷贝的`globalContext`上添加一个`key`为 `ctx2.id`，`value`为`ctx2.Provider`的实例的项
+- 给浅拷贝的`globalContext`对象上添加一个`key`为 `ctx2.id`，`value`为`ctx2.Provider`的实例的项
 
 接着，把浅拷贝的`globalContext`代替旧的`globalContext`，传递给 `C1`。那么现在整课树中，`globalContext`指向如下所示
 
-<img src="image/image-20220209140705147.png" alt="image-20220209140705147" style="zoom: 50%;" />
+<img src="image/image-20220209140705147.png" alt="image-20220209140705147" style="zoom: 60%;" />
 
 现在，每个子节点都可以从`globalContext`上获取到对应作用域下的内容
 
@@ -1012,27 +1012,287 @@ componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, snapshot?: S
 
 # 	13	hooks
 
-## useReducer
+> `hooks`的相关实现见 [/packages/13](https://github.com/bpuns/Preact-study/blob/master/packages/13)，可以使用 `$ npm run 13` 启动
 
-## useState
+## 13.1	准备工作
 
-## useMemo
+### 13.1.1	hooks基本原理
 
-## useCallback
+`hooks`为什么不能在循环，判断中使用，原因在于函数组件会像类组件中的`render`一样，重复执行。而`vue3`的`setup`，`solidJs`的函数组件，更像一个`constructor`，只会触发一次，因此它们不需要太在意`hooks`的顺序问题
 
-## useRef
+`hooks`中的`useMemo`，`useCallback`，`useRef`等等还有缓存的作用，那么这些`hooks`怎么才能知道哪些东西需要使用缓存，哪些需要重新执行？在`Preact`中，它是这么实现的，首先，函数组件被`Component`代理，然后在实例化对象上，如果发现此函数组件中使用了`hooks`，那么就会在类实例上存储一个 `__hook`变量，具体结构如下
 
-## useContext
+```js
+{ 
+  __hook: {
+    // 存储hook的一些数据，方便下次判断与复用
+    _list: [],
+    // useEffect中用到，现在先不讲
+    _pendingEffects: []
+  } 
+}
+```
 
-## useEffect
+紧接着，定义一个变量 `hookIndex`，初始值为`0`
 
-## useLayoutEffect
+准备工作完成，开始执行函数组件，`hooks`执行的时候，都会从 `__hook._list[hookIndex]` 获取上一次的缓存（不同`hooks`存储的数据不同），然后内部，执行完成一个`hooks`后，`hookIndex`都会`+1`。因此，如果函数组件每次执行的时候，`hooks`的位置不固定，就会导致缓存利用失败
 
-## memo
+<img src="image/image-20220211172246405.png" alt="image-20220211172246405" style="zoom:67%;" />
+
+### 13.1.2	获取当前执行的组件实例
+
+在函数组件的执行过程中，`hooks`需要从一个地方获取到当前函数组件的虚拟`dom`对象（从虚拟`dom`对象上可以获取到`Component`代理对象），在此对象上存放和写入一个数据。其实这很好实现，你从上面的实现中就可以看到，整个过程其实就是在和`diff`函数打交道，所以只需要在`diff`函数执行`render`获取虚拟`dom`之前，把当前的`newVNode`存储到一个地方就行了。因为`hooks`是可选功能，所以没必要在未使用`hooks`的时候存储`newVNode`
+
+`Preact`是这么做的，它在全局存储了一个`options`的空对象，如果`import`了`hooks`的函数，就会在`options`上注册一个名为 `_render` 的函数，接着在`diff`函数中，调用`Component.render`前，调用`options._render`
+
+<img src="image/code-16446649349511.png" alt="code" style="zoom:50%;" />
+
+接着在`options._render`中保存实例
+
+<img src="image/code-16446653385793.png" alt="code" style="zoom:50%;" />
+
+## 13.2	实现useMemo
+
+准备工作都已经完成了，现在可以实现一个最简单的`hooks`来引出更多的知识点
+
+`useMemo`的类型定义如下，第二个参数可以为了方便理解可以理解成一个“依赖”（实际上并不是依赖，只是一个标识符）
+
+```ts
+type Inputs = ReadonlyArray<unknown>;
+
+function useMemo<T>(factory: () => T, inputs: Inputs | undefined): T;
+```
+
+`useMemo`内部会把接收到的`inputs`和泛型`T`存储起来，如果第二次执行的时候，发现`inputs`中的值和前一次相同，`factory`就不需要重复调用，直接把上一次的存储起来的`T`返回
+
+准备一个`getHookState`，用来**获取**和**设置**当前函数组件实例上存储的数据
+
+<img src="image/code-16446673385714.png" alt="code" style="zoom:50%;" />
+
+接着再准备一个用来判断新旧”依赖“是否一致的函数 `argsChanged`
+
+<img src="image/code-16446674921955.png" alt="code" style="zoom: 50%;" />
+
+最后，`useMemo`的实现只需要借助这两个函数就能实现
+
+<img src="image/code-164467584722910.png" alt="code" style="zoom:50%;" />
 
 
 
-# 	14	fiber
+## 13.3	useCallback/useRef
+
+在`Preact`中，`useCallback`/`useRef`全部都是用`useMemo`实现的
+
+<img src="image/code-16446745401757.png" alt="code" style="zoom: 50%;" />
+
+## 13.4	useReducer/useState
+
+`useReducer`也能使用 `getHookState` 和  `argsChanged` 实现。需要在`hookState`上存储三个变量
+
+- **_reducer：** 存储`reducer`函数
+- **_value：** 存储`useReducer`的返回值，
+- **_component：** 存储当前`useReducer`所在的组件实例，方便在触发`dispatch`后直接调用`setState`更新
+
+<img src="image/code-16446755016068.png" alt="code" style="zoom: 50%;" />
+
+`useState`使用 `useReducer` 就可以实现
+
+<img src="image/code-16446757134769.png" alt="code" style="zoom:50%;" />
+
+## 13.5	memo
+
+### 13.5.1	PureComponent实现
+
+写到这里的时候，突然想起来`PureComponent`忘记写了，`PureComponent`只需继承`Component`，并添加一个`shouldComponentUpdate`的方法就能实现，如下
+
+<img src="image/code-164468007674511.png" alt="code" style="zoom:50%;" />
+
+### 13.5.2	memo实现
+
+`memo`可以借助`PureComponent`实现，如下
+
+<img src="image/code-164468023646412.png" alt="code" style="zoom:50%;" />
 
 
+
+## 13.6	useContext
+
+因为在调用`hooks`的时候，可以获取到当前的组件实例，也就是说可以获取到当前实例上的`globalContext`，那只需要在`useContext`中完成两件事情，第一步是取出`Provider`组件的实例，第二步是订阅组件
+
+<img src="image/code-164468115954013.png" alt="code" style="zoom:50%;" />
+
+
+
+## 13.7	useLayoutEffect
+
+### 13.7.1	执行流程
+
+前面的`hooks`的实现相对简单，`useLayoutEffect`会稍微麻烦，因为`useLayoutEffect`有充当生命周期的作用，它的第一个参数（`callback`）的返回值是一个函数，它会根据“依赖”的变化，在下一次`update`前执行，如果没有”依赖"就会在组件卸载时执行
+
+如下图所示，注意”类似“两个字，因为性质和生命周期并不完全相同
+
+<img src="image/image-20220213114402204.png" alt="image-20220213114402204" style="zoom: 67%;" />
+
+当页面初始化的时候，控制台打印如下
+
+```
+useLayoutEffect
+useLayoutEffect before 1
+```
+
+当`props.a + 1`的时候打印如下
+
+```
+useLayoutEffect after 1
+useLayoutEffect before 2
+```
+
+当A组件卸载的时候打印如下
+
+```
+useLayoutEffect unmounted
+useLayoutEffect after 2
+```
+
+### 13.7.2	update实现
+
+```ts
+function useLayoutEffect(effect: EffectCallback, inputs?: Inputs): void;
+```
+
+ 第一步，判断 `inputs` 是否发生变化，如果发生变化在的 `hookState` 上会存储三个值
+
+```
+_effect    存储第一个回调，这个回调不会立马触发
+_inputs    存储第二个依赖
+_cleanup   存储调用_effect后的返回值
+```
+
+接着把`hookState`存储在 `currentComponent._renderCallbacks` 上
+
+<img src="image/code-164473694606014.png" alt="code" style="zoom:50%;" />
+
+因为`_renderCallbacks`默认存储的是方法，但是`hookState`是对象。所以在`commitRoot`中一定会报错，因此需要在`commitRoot`执行前，把`hookState`和其它方法筛选出来，可以像获取组件实例一样，在`options`上注入一个方法
+
+<img src="image/code-164473854391115.png" alt="code" style="zoom:50%;" />
+
+此方法需要对`_renderCallbacks`进行过滤，把`hookState`取出来，剩下的重新写入到 `_renderCallbacks` 中。取出来的`hookState`传入`invokeEffect`函数中，这个函数只干一件事情就是执行`_effect`函数，并把返回值赋值给`_cleanup`
+
+<img src="image/code-164473867218916.png" alt="code" style="zoom:50%;" />
+
+那么这个`_cleanup`什么时候执行呢？它在`invokeEffect`之前执行，那么可以再定义一个函数，名为`invokeCleanup`，这个函数的作用就是执行`_cleanup`，执行完成之后，清除`_cleanup`
+
+<img src="image/code-164473874031217.png" alt="code" style="zoom:50%;" />
+
+那么`_commit`的完整代码如下
+
+<img src="image/code-164473884223518.png" alt="code" style="zoom: 50%;" />
+
+### 13.7.3	unmount实现
+
+到到现在为止，`useLayoutEffect`的大部分功能都已经完成，只缺少了一个组件卸载的时候调用的方法
+
+<img src="image/image-20220213155927113.png" alt="image-20220213155927113" style="zoom:67%;" />
+
+次函数其实在初始化的时候，已经存储到了`_clearnUp`中了，之所以没有被触发，是因为第二次更新的时候，“依赖”没有发生变化，所以没有把`hookState`存储到`_renderCallbacks`中，所以需要在组件卸载前，把存储起来的`_clearnUp`全部执行。只需要给`options`注入一个方法，并在`unmount`函数中执行
+
+<img src="image/image-20220213160743763.png" alt="image-20220213160743763" style="zoom:67%;" />
+
+接着，判断是否存储了`_clearnUp`，如果存储了，执行便是
+
+<img src="image/code-164473972948619.png" alt="code" style="zoom:50%;" />
+
+## 13.8	useEffect
+
+在`Preact`中，`useEffect`的表现形式与`React`不同，`Preact`在组件卸载的时候，`useEffect` 会比`useLayoutEffect` 先触发，所以下面的代码不以`Preact`官方为准，自己实现
+
+`useEffect`的实现与`useLayoutEffect`类似，只不过不把`hookState`存储在`_renderCallbacks`中，而是`_pendingEffects`中，这里需要添加一个属性`_isUseEffect`属性用于和`useLayoutEffect`区分
+
+<img src="image/code-164474741004920.png" alt="code" style="zoom:50%;" />
+
+接着，给`options`上添加一个`_diffed`方法，用于执行`_pendingEffects`上的方法，此方法在所有子节点完成后触发
+
+<img src="image/code-164474932295121.png" alt="code" style="zoom:50%;" />
+
+因为`useEffect`不会阻塞页面渲染，所以可以做一个类似`setState`的更新队列，把所有`useEffect`放置到下一次宏任务中执行所有
+
+<img src="image/code-164474938243122.png" alt="code" style="zoom:50%;" />
+
+那么卸载同理，准备一个`options._unmounted`方法，执行所有 `clearnUp`方法
+
+<img src="image/code-164474955445523.png" alt="code" style="zoom: 50%;" />
+
+到现在为止其实就已经实现大半了，只不过会出现一个问题，`useEffect`会比`useLayoutEffect`先执行，并且在`useEffect`中还能访问到页面上的`dom`，这是因为`options._unmounted`方法没有生效，所有的`_cleanUp`方法在 `options._unmount`中全部执行完了。为了解决这个问题， 就要运用到 `_isUseEffect` 这个标识，修改`options._unmount`方法
+
+<img src="image/code-164475001248724.png" alt="code" style="zoom:50%;" />
+
+# 14	concurrent mode
+
+## 14.1	递归存在的问题
+
+在`diff`中使用递归的方式会出现一个问题，就是在`diff`的整个过程中，页面是卡死的状态，用户没法操作页面，就会造成不好的用户体验。以60帧的显示器为例，渲染一帧需要16.6ms，如果页面中正在展示动画，如果一帧的渲染时间超过16.6ms，就会出现卡顿，一般这种情况都是在某一时刻，任务执行时间太长，理想状态下，浏览器以下面的方式进行执行任务
+
+![image-20220214094805832](image/image-20220214094805832.png)
+
+但是如果`js`执行时间过长，就会出现下面的情况
+
+![image-20220214095054628](image/image-20220214095054628.png)
+
+那么有没有这么一种`api`，能够告知`js`，一帧还有多少空闲时间，如果空闲时间不够，直接暂停js程序，等到下一帧再运行，以此反复，直到任务执行完成？`requestIdleCallback`这个`api`就进入了`React`的视野了，这个`api`能够告知开发者，浏览器是否在空闲状态，由于这个`api`还在实验阶段，于是`React`官方自己实现了一个
+
+## 14.2	concurrent mode基本原理
+
+获取空闲时间的问题解决了，那么一份空闲时间内要执行多少任务？对于这个问题，`React`官方推出了一种新的用来描述页面结构的数据结构，名为`fiber`，可以把每个`fiber`都看成一个最小的执行单元，不可再分割，大致结构如下
+
+```js
+{
+	// 标识当前是什么节点
+  tag: null,
+  // 当前fiber对应页面中的真实dom地址
+  stateNode: null,
+  // 虚拟dom的type值
+  type: null,
+  // 虚拟dom的props值
+  props: null,
+
+  // 当前节点的父节点
+  return: null,
+  // 当前节点的兄弟节点
+  sibling: null,
+  // 当前节点的第一个子节点
+  child: null,
+  
+  // 副作用指针
+  firstEffect: null,
+  nextEffect: null,
+  lastEffect: null,
+    
+}
+```
+
+`fiber`其实就是虚拟`dom`的另外一种描述形式，下图的左边是页面中`dom`结构的树型描述，右边是`fiber`的基本结构描述
+
+<img src="image/image-20220214092345550.png" alt="image-20220214092345550" style="zoom:80%;" />
+
+`fiber`并不是凭空产生的，并且也不会在预编译时出现，而是运行时。这意味着`fiber`还会在运行时浪费一部分的性能，从虚拟`dom`转化成`fiber`。但是带来的好处是，这个单元足够的小，因此不会执行一个小单元就把当前帧的空闲时间占满（如果某一个单元执行时间过长，依然会出现掉帧），借助`requestIdleCallback`这个`api`就能实现如下效果
+
+<img src="image/image-20220214101004790.png" alt="image-20220214101004790" style="zoom:67%;" />
+
+当处理完成一个`fiber`之后，`React`会判断当前的`fiber`是否需要更新，然后挂载在父节点上，处理父节点的时候判断子节点或自己是否需要更新，如果需要再挂载到父父节点上，以此类推，等所有`fiber`全部处理完成之后，所有需要更新的`fiber`都会通过链表串起来，然后做一个`while`循环，一次性更新
+
+<img src="image/image-20220214101839014.png" alt="image-20220214101839014" style="zoom:67%;" />
+
+
+
+## 14.3	为什么不看好concurrent mode
+
+尤雨溪曾经这么评价`React`
+
+<img src="image/image-20220214104321354.png" alt="image-20220214104321354" style="zoom:67%;" />
+
+`concurrent mode`本质上并没有带来性能上的提升，并且可能还会带来性能劣化。而且还会带来新的概念，开发者增加门槛，附带增加了一道面试题。`github`上有人向尤雨溪提问，为什么vue3要移除时间切片？尤雨溪也进行了[答复](https://github.com/vuejs/rfcs/issues/89#issuecomment-546988615)，大致意思就是说，`Fiber`架构并不是为了解决过度渲染的问题而出现的，而是为了解决一个大任务渲染时间过长而存在，`Preact`的开发者对尤雨溪的回答也进行了认同，[传送门](https://github.com/vuejs/rfcs/issues/89#issuecomment-547128896)
+
+解决过渡渲染的问题`Vue`已经帮助开发者做好了，因此，就算交给`js`基础非常差的人，写出来的应用性能也不会差到哪里去。而`React`中的优化交给开发者，而大部分的开发者其实根本就不会去做优化，俗称能跑就行，对于这类开发者而言，`fiber`反而再次减低了性能，因此我并不是很看好`concurrent mode`
+
+当然，虽然不看好，但是学还是得学的，`Vue3`都来了，`React18`还会远吗
 

@@ -1,9 +1,21 @@
-import React, { createContext, Component, useEffect, useLayoutEffect, useCallback, useState, Fragment, useContext } from 'react'
-import { render } from 'react-dom'
-// import { render, createContext, Component, createElement, Fragment } from 'preact'
-// import { useContext, useState, useCallback, useEffect, useLayoutEffect } from 'preact/hooks'
-// import { memo } from 'preact/compat'
-// const React = { createElement }
+import {
+  Component,
+  Fragment,
+  createElement,
+  createContext,
+  render,
+  useMemo,
+  useCallback,
+  useReducer,
+  useState,
+  useContext,
+  memo,
+  PureComponent,
+  useEffect,
+  useLayoutEffect
+} from './react'
+
+const React = { createElement }
 
 function Root() {
 
